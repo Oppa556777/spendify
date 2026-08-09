@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#F7F9F5</color>
+    <color name="card">#FFFFFF</color>
+    <color name="text">#191C18</color>
+    <color name="subtext">#5F665D</color>
+    <color name="divider">#E0E6DC</color>
+    <color name="primary">#2E7D32</color>
+    <color name="income">#2E7D32</color>
+    <color name="expense">#C62828</color>
+    <color name="ic_launcher_background">#1B5E20</color>
+    <color name="splash_background">#F7F9F5</color>
+</resources>

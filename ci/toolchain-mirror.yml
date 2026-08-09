@@ -1,0 +1,147 @@
+# Toolchain Mirror workflow
+# -------------------------------------------
+# This file is intentionally stored OUTSIDE .github/workflows/ because this
+# repository was authored by a GitHub App whose token lacks the `workflows`
+# permission (GitHub rejects pushes that create/update workflow files).
+#
+# To use it: copy to .github/workflows/toolchain-mirror.yml and push with a
+# normal account. It builds the app on a GitHub-hosted runner (clean egress)
+# and mirrors the full offline toolchain (JDK + Gradle + Android SDK +
+# pre-warmed Gradle cache) into the `toolchain-mirror` branch as split
+# archives, so egress-restricted environments can build fully offline.
+#
+# See README.md → "Building in a restricted-egress environment".
+
+name: Toolchain Mirror
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'arena/019fe7d0-spendify'
+    paths:
+      - '.github/toolchain/*'
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    env:
+      JDK_VERSION: "21.0.12+8"
+      JDK_ASSET: "OpenJDK21U-jdk_x64_linux_hotspot_21.0.12_8.tar.gz"
+      GRADLE_VERSION: "8.11.1"
+      CMDLINE_TOOLS_URL: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+      ANDROID_HOME: "${{ runner.temp }}/android-sdk"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download JDK 21
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/jdk.tar.gz" \
+            "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${JDK_VERSION//+/%2B}/${JDK_ASSET}"
+          mkdir -p /opt/jdk
+          tar -xzf "$RUNNER_TEMP/jdk.tar.gz" -C /opt/jdk --strip-components=1
+          /opt/jdk/bin/java -version
+
+      - name: Download Gradle
+        run: curl -fsSL -o "$RUNNER_TEMP/gradle.zip" "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"
+
+      - name: Download Android cmdline-tools
+        run: curl -fsSL -o "$RUNNER_TEMP/cmdtools.zip" "$CMDLINE_TOOLS_URL"
+
+      - name: Install Android SDK packages
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          unzip -q "$RUNNER_TEMP/cmdtools.zip" -d "$RUNNER_TEMP/ct"
+          mv "$RUNNER_TEMP/ct/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          export JAVA_HOME=/opt/jdk
+          export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin"
+          yes | sdkmanager --licenses --sdk_root="$ANDROID_HOME" >/dev/null || true
+          sdkmanager --sdk_root="$ANDROID_HOME" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      - name: Build app (populates Gradle cache)
+        run: |
+          set +e
+          export JAVA_HOME=/opt/jdk
+          export ANDROID_HOME="$ANDROID_HOME"
+          unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP/"
+          export PATH="$PATH:$RUNNER_TEMP/gradle-${GRADLE_VERSION}/bin"
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          gradle --no-daemon \
+            -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g" \
+            -Dkotlin.daemon.jvmargs="-Xmx2g" \
+            :app:assembleDebug > build.log 2>&1
+          echo "BUILD_EXIT=$?" | tee "$RUNNER_TEMP/build_exit.txt"
+          tail -40 build.log
+
+      - name: Package toolchain
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pkg/mirror"
+          cd "$RUNNER_TEMP/pkg"
+          find "$HOME/.gradle" -name '*.lock' -delete 2>/dev/null || true
+          rm -rf "$HOME/.gradle/daemon" "$HOME/.gradle/caches/journal-1" \
+                 "$HOME/.gradle/caches/build-cache-1" "$HOME/.gradle/caches/config" \
+                 "$HOME/.gradle/caches/transforms" 2>/dev/null || true
+          cp "$RUNNER_TEMP/jdk.tar.gz" jdk.tar.gz
+          cp "$RUNNER_TEMP/gradle.zip" gradle.zip
+          tar -C "$ANDROID_HOME" -czf sdk.tar.gz .
+          tar -C "$HOME/.gradle" -czf gradle-cache.tar.gz caches 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE/app/build/outputs/apk/debug/app-debug.apk" app-debug.apk 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE/build.log" build.log 2>/dev/null || true
+          cp "$RUNNER_TEMP/build_exit.txt" build_exit.txt 2>/dev/null || true
+          cat > mirror/TOOLCHAIN.md <<'MD'
+# Toolchain mirror
+Reassemble in an egress-restricted sandbox:
+  sha256sum -c SHA256SUMS
+  cat jdk.tar.gz.* > jdk.tar.gz
+  cat gradle.zip.* > gradle.zip
+  cat sdk.tar.gz.* > sdk.tar.gz
+  cat gradle-cache.tar.gz.* > gradle-cache.tar.gz
+Build with: GRADLE_USER_HOME=... ANDROID_HOME=... JAVA_HOME=... gradle --offline :app:assembleDebug
+MD
+          split -b 95m jdk.tar.gz jdk.tar.gz.
+          split -b 95m gradle.zip gradle.zip.
+          split -b 95m sdk.tar.gz sdk.tar.gz.
+          split -b 95m gradle-cache.tar.gz gradle-cache.tar.gz.
+          mv jdk.tar.gz.* gradle.zip.* sdk.tar.gz.* gradle-cache.tar.gz.* \
+             app-debug.apk build.log build_exit.txt mirror/ 2>/dev/null || true
+
+      - name: Commit and push (incremental, <1GB per push)
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "toolchain-mirror"
+          git config user.email "toolchain-mirror@users.noreply.github.com"
+          git config http.postBuffer 524288000
+          (cd "$RUNNER_TEMP/pkg" && sha256sum mirror/* > mirror/SHA256SUMS)
+          git checkout --orphan toolchain-mirror
+          git rm -rfq . || true
+          mkdir -p mirror
+          cp -r "$RUNNER_TEMP/pkg/mirror/." mirror/
+          git add mirror/SHA256SUMS mirror/TOOLCHAIN.md mirror/jdk* mirror/gradle.zip* mirror/sdk* mirror/app-debug.apk mirror/build.log mirror/build_exit.txt
+          git commit -qm "mirror: jdk+gradle+sdk+apk ($(date -u +%FT%TZ))"
+          git push -fu origin toolchain-mirror
+          shopt -s nullglob
+          files=(mirror/gradle-cache.tar.gz.*)
+          i=0
+          batch=()
+          for f in "${files[@]}"; do
+            batch+=("$f")
+            i=$((i+1))
+            if [ $((i % 8)) -eq 0 ]; then
+              git add "${batch[@]}"
+              git commit -qm "mirror: cache batch $(date -u +%FT%TZ)"
+              git push origin toolchain-mirror
+              batch=()
+            fi
+          done
+          if [ ${#batch[@]} -gt 0 ]; then
+            git add "${batch[@]}"
+            git commit -qm "mirror: cache final batch $(date -u +%FT%TZ)"
+            git push origin toolchain-mirror
+          fi
