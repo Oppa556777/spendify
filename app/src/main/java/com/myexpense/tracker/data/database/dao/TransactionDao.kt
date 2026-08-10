@@ -86,6 +86,24 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
 
+    @Query("SELECT COUNT(*) FROM transactions")
+    suspend fun countAll(): Int
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE receiptImagePath IS NOT NULL")
+    suspend fun countWithReceipts(): Int
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE amount >= :amountMinor AND type = 'EXPENSE'")
+    suspend fun countBigExpenses(amountMinor: Double): Int
+
+    @Query("SELECT COUNT(DISTINCT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime')) FROM transactions")
+    suspend fun countActiveDays(): Int
+
+    @Query("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type = 'INCOME' AND date BETWEEN :from AND :to")
+    suspend fun incomeBetween(from: Long, to: Long): Double
+
+    @Query("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE type = 'EXPENSE' AND date BETWEEN :from AND :to")
+    suspend fun expenseBetween(from: Long, to: Long): Double
+
     /** Distinct titles from history — used for smart suggestions in the add form. */
     @Query("SELECT DISTINCT title FROM transactions WHERE title != '' ORDER BY id DESC LIMIT 30")
     fun recentTitles(): Flow<List<String>>
@@ -234,6 +252,39 @@ interface TransactionDao {
         """
     )
     fun observeAccountTransactions(accountId: Long, type: TransactionType?): Flow<List<TransactionEntity>>
+
+    /**
+     * Advanced search with optional filters: text, date range, category,
+     * account, amount range, tag (comma-separated ids) and person.
+     */
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE (:query = '' OR title LIKE '%' || :query || '%'
+               OR note LIKE '%' || :query || '%'
+               OR categoryId IN (SELECT id FROM categories WHERE name LIKE '%' || :query || '%'))
+          AND (:from IS NULL OR date >= :from)
+          AND (:to IS NULL OR date <= :to)
+          AND (:categoryId IS NULL OR categoryId = :categoryId)
+          AND (:accountId IS NULL OR accountId = :accountId)
+          AND (:minAmount IS NULL OR amount >= :minAmount)
+          AND (:maxAmount IS NULL OR amount <= :maxAmount)
+          AND (:tagId IS NULL OR (',' || tags || ',') LIKE '%,' || :tagId || ',%')
+          AND (:personId IS NULL OR personId = :personId)
+        ORDER BY date DESC, id DESC
+        """
+    )
+    fun searchAdvanced(
+        query: String,
+        from: Long?,
+        to: Long?,
+        categoryId: Long?,
+        accountId: Long?,
+        minAmount: Double?,
+        maxAmount: Double?,
+        tagId: Long?,
+        personId: Long?,
+    ): Flow<List<TransactionEntity>>
 
     /** The most recent transaction for every account (by insertion id). */
     @Query(

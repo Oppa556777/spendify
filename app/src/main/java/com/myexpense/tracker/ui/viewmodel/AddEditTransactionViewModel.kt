@@ -12,6 +12,7 @@ import com.myexpense.tracker.data.model.Tag
 import com.myexpense.tracker.data.model.Transaction
 import com.myexpense.tracker.data.model.TransactionType
 import com.myexpense.tracker.data.repository.AccountRepository
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.CategoryRepository
 import com.myexpense.tracker.data.repository.PersonRepository
 import com.myexpense.tracker.data.repository.RecurringRuleRepository
@@ -77,6 +78,7 @@ class AddEditTransactionViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val personRepository: PersonRepository,
     private val recurringRuleRepository: RecurringRuleRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -363,6 +365,7 @@ class AddEditTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             val id = tagRepository.save(name.trim(), 0xFF6C63FF)
             tags.value = tags.value + id
+            achievementUnlocker.onTagCreated()
         }
     }
 
@@ -470,6 +473,7 @@ class AddEditTransactionViewModel @Inject constructor(
                 recurringId = ruleId,
             )
             transactionRepository.save(transaction)
+            achievementUnlocker.onTransactionSaved(transaction)
 
             // Keep account balances live.
             when (st.type) {

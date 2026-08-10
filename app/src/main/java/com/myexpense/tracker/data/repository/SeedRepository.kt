@@ -71,60 +71,31 @@ class SeedRepository @Inject constructor(
             category("Others", TransactionType.INCOME, "add_circle", 0xFF9E9E9E),
         )
 
-        /** Sample achievements, unlocked progressively as the user uses the app. */
+        /** The 20 built-in achievements (all free, no paywall). */
         fun sampleAchievements(): List<AchievementEntity> {
-            val now = System.currentTimeMillis()
+            fun a(title: String, description: String, icon: String, type: String) =
+                AchievementEntity(title = title, description = description, iconName = icon, type = type)
             return listOf(
-                AchievementEntity(
-                    title = "Welcome Aboard",
-                    description = "You installed MoneyMate – a fully offline expense tracker.",
-                    iconName = "workspace_premium",
-                    isUnlocked = true,
-                    unlockedAt = now,
-                    type = "ONBOARDING",
-                ),
-                AchievementEntity(
-                    title = "First Transaction",
-                    description = "Add your very first expense or income.",
-                    iconName = "payments",
-                    type = "TRANSACTION",
-                ),
-                AchievementEntity(
-                    title = "Budget Planner",
-                    description = "Create your first monthly budget.",
-                    iconName = "savings",
-                    type = "BUDGET",
-                ),
-                AchievementEntity(
-                    title = "Goal Setter",
-                    description = "Create your first savings goal.",
-                    iconName = "star",
-                    type = "GOAL",
-                ),
-                AchievementEntity(
-                    title = "Track Star",
-                    description = "Log 50 transactions.",
-                    iconName = "show_chart",
-                    type = "TRANSACTION",
-                ),
-                AchievementEntity(
-                    title = "Saver",
-                    description = "Put aside money towards a goal.",
-                    iconName = "savings",
-                    type = "GOAL",
-                ),
-                AchievementEntity(
-                    title = "Debt Free",
-                    description = "Settle your first loan.",
-                    iconName = "payments",
-                    type = "LOAN",
-                ),
-                AchievementEntity(
-                    title = "Early Bird",
-                    description = "Log a transaction before 8 AM.",
-                    iconName = "auto_awesome",
-                    type = "TRANSACTION",
-                ),
+                a("First Step", "Add your first transaction", "payments", "TRANSACTION"),
+                a("Budget Master", "Create your first budget", "savings", "BUDGET"),
+                a("Saver", "Create your first savings goal", "star", "GOAL"),
+                a("Week Warrior", "Track expenses 7 days in a row", "local_fire_department", "STREAK_7"),
+                a("Month Master", "Track expenses 30 days in a row", "emoji_events", "STREAK_30"),
+                a("Century Club", "Log 100 transactions", "100", "COUNT_100"),
+                a("No Overspend", "Stay within all budgets for a month", "verified", "BUDGET_OK"),
+                a("Goal Crusher", "Complete a savings goal", "military_tech", "GOAL_COMPLETE"),
+                a("Detail Oriented", "Add 10 transactions with receipts", "receipt_long", "RECEIPT_10"),
+                a("Tag Team", "Create 5 custom tags", "sell", "TAG_5"),
+                a("Multi-Banker", "Add 3 or more accounts", "account_balance", "ACCOUNT_3"),
+                a("Loan Free", "Settle all your loans", "payments", "LOAN_FREE"),
+                a("Subscription Guru", "Track 5 or more subscriptions", "subscriptions", "SUBSCRIPTION_5"),
+                a("Export Pro", "Export a report (PDF or CSV)", "picture_as_pdf", "EXPORT"),
+                a("Night Owl", "Add a transaction after midnight", "nights_stay", "NIGHT"),
+                a("Early Bird", "Add a transaction before 7 AM", "wb_sunny", "EARLY"),
+                a("Big Spender", "A single expense over ₹10,000", "local_fire_department", "BIG_SPEND"),
+                a("Penny Pincher", "Monthly expenses under 50% of income", "savings", "PENNY"),
+                a("Consistent", "Use the app for 90 days", "calendar_month", "CONSISTENT"),
+                a("Money Master", "Unlock all other achievements", "workspace_premium", "MASTER"),
             )
         }
     }

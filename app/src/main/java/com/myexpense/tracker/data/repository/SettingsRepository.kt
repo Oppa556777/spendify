@@ -54,6 +54,9 @@ class SettingsRepository @Inject constructor(
         context.dataStore.edit { it[Keys.CURRENCY] = symbol }
     }
 
+    /** Blocking-safe current currency symbol (usable inside runBlocking). */
+    suspend fun currentSymbol(): String = settings.first().currencySymbol
+
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { it[Keys.THEME] = mode.ordinal }
     }

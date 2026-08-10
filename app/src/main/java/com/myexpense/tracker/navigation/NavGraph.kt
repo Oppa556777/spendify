@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,6 +27,9 @@ import com.myexpense.tracker.ui.screens.addedit.AddEditTransactionScreen
 import com.myexpense.tracker.ui.screens.backup.BackupRestoreScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetsScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetDetailScreen
+import com.myexpense.tracker.ui.screens.achievements.AchievementsScreen
+import com.myexpense.tracker.ui.screens.assets.AssetsScreen
+import com.myexpense.tracker.ui.screens.billsplits.BillSplitsScreen
 import com.myexpense.tracker.ui.screens.categories.CategoriesScreen
 import com.myexpense.tracker.ui.screens.goals.GoalsScreen
 import com.myexpense.tracker.ui.screens.loans.LoansScreen
@@ -45,9 +49,17 @@ private val tabRoutes = listOf(
 )
 
 @Composable
-fun MoneyMateNavHost() {
+fun MoneyMateNavHost(initialDestination: String? = null) {
     val navController = rememberNavController()
     var addMenuOpen by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(initialDestination) {
+        if (initialDestination == "reports") {
+            navController.navigate(Routes.STATS) {
+                launchSingleTop = true
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -147,6 +159,9 @@ fun MoneyMateNavHost() {
                         onOpenGoals = { navController.navigate(Routes.GOALS) },
                         onOpenLoans = { navController.navigate(Routes.LOANS) },
                         onOpenSubscriptions = { navController.navigate(Routes.SUBSCRIPTIONS) },
+                        onOpenAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
+                        onOpenSplitBill = { navController.navigate(Routes.BILL_SPLITS) },
+                        onOpenAssets = { navController.navigate(Routes.ASSETS) },
                         onOpenBackup = { navController.navigate(Routes.BACKUP) },
                     )
                 }
@@ -178,6 +193,18 @@ fun MoneyMateNavHost() {
 
                 composable(Routes.GOALS) {
                     GoalsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.ACHIEVEMENTS) {
+                    AchievementsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.BILL_SPLITS) {
+                    BillSplitsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.ASSETS) {
+                    AssetsScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Routes.LOANS) {
@@ -212,14 +239,20 @@ fun MoneyMateNavHost() {
                         }
                     ),
                 ) {
-                    AddEditTransactionScreen(onDone = { navController.popBackStack() })
+                    AddEditTransactionScreen(
+                        onDone = { navController.popBackStack() },
+                        onSplitBill = { navController.navigate(Routes.BILL_SPLITS) },
+                    )
                 }
 
                 composable(
                     route = Routes.EDIT_TRANSACTION,
                     arguments = listOf(navArgument("id") { type = NavType.LongType }),
                 ) {
-                    AddEditTransactionScreen(onDone = { navController.popBackStack() })
+                    AddEditTransactionScreen(
+                        onDone = { navController.popBackStack() },
+                        onSplitBill = { navController.navigate(Routes.BILL_SPLITS) },
+                    )
                 }
             }
 

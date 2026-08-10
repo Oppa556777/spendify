@@ -7,6 +7,7 @@ import com.myexpense.tracker.data.model.AccountType
 import com.myexpense.tracker.data.model.AccountWithBalance
 import com.myexpense.tracker.data.model.Transaction
 import com.myexpense.tracker.data.repository.AccountRepository
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.SettingsRepository
 import com.myexpense.tracker.data.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,6 +37,7 @@ data class AccountsUiState(
 class AccountsViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
     private val transactionRepository: TransactionRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -87,6 +89,7 @@ class AccountsViewModel @Inject constructor(
                     .forEach { accountRepository.save(it.copy(isDefault = false)) }
             }
             accountRepository.save(account)
+            achievementUnlocker.onAccountSaved()
             error.value = null
         }
     }

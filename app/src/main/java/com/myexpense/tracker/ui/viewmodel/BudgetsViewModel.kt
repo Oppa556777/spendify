@@ -6,6 +6,7 @@ import com.myexpense.tracker.data.model.Budget
 import com.myexpense.tracker.data.model.BudgetStatus
 import com.myexpense.tracker.data.model.BudgetWithSpent
 import com.myexpense.tracker.data.model.Category
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.BudgetRepository
 import com.myexpense.tracker.data.repository.CategoryRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
@@ -41,6 +42,7 @@ data class BudgetsUiState(
 class BudgetsViewModel @Inject constructor(
     private val budgetRepository: BudgetRepository,
     private val categoryRepository: CategoryRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -90,6 +92,7 @@ class BudgetsViewModel @Inject constructor(
     fun save(budget: Budget) {
         viewModelScope.launch {
             budgetRepository.save(budget)
+            achievementUnlocker.onBudgetCreated()
             error.value = null
         }
     }

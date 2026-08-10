@@ -20,6 +20,9 @@ object Routes {
     const val GOALS = "goals"
     const val LOANS = "loans"
     const val SUBSCRIPTIONS = "subscriptions"
+    const val ACHIEVEMENTS = "achievements"
+    const val BILL_SPLITS = "billsplits"
+    const val ASSETS = "assets"
     const val ONBOARDING = "onboarding"
 
     fun addTransaction(type: TransactionType): String = "transaction/add?type=${type.name}"

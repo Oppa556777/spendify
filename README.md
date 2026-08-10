@@ -81,6 +81,24 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   cards with first-letter icons, due-in chips color-coded by urgency
   (green/orange/red), active/paused toggles, Pay-to-advance; add sheet with
   cycle/category/reminder/color
+- **Achievements** – 20 built-in achievements (all free): gold-bordered
+  unlocked cards with unlock dates, 🔒 grayed locked cards, confetti burst on
+  unlock, system notifications, streak/90-day tracking, and "Money Master"
+  for completing all others; checked after every action
+- **Split Bill** – equal/custom/percentage splits, participants from People or
+  inline names, "who paid?" tracking, per-member paid toggles, settlement
+  summary and full history
+- **Assets** – stocks/mutual funds/crypto/real estate/gold/FD/other with
+  invested vs current value, gain/loss + %, portfolio summary and a
+  by-type donut chart
+- **Recurring automation** – on app open, due recurring rules trigger a
+  notification + in-app confirm dialog; confirmed rules auto-create
+  transactions and mark themselves executed
+- **Advanced search** – instant results with date/category/account/amount/tag/
+  person filters, sort by date/amount/category, highlighted matches and local
+  recent-search history
+- **Home-screen widgets** – 2×1 balance widget (today's spending + balance)
+  and 4×2 7-day spending graph widget; taps open the app / Reports
 - **Settings** – theme (system/light/dark), currency symbol, biometric lock
 - **Export** – CSV (all transactions) and PDF monthly report
 - **Backup/Restore** – full JSON backup to any local folder, with preview

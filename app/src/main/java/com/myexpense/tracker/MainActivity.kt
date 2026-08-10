@@ -1,25 +1,37 @@
 package com.myexpense.tracker
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,58 +53,131 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
+import com.myexpense.tracker.data.database.entity.RecurringRuleEntity
+import com.myexpense.tracker.data.model.Transaction
+import com.myexpense.tracker.data.model.TransactionType
+import com.myexpense.tracker.data.repository.AchievementUnlocker
+import com.myexpense.tracker.data.repository.RecurringRuleRepository
 import com.myexpense.tracker.data.repository.SeedRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
+import com.myexpense.tracker.data.repository.TransactionRepository
 import com.myexpense.tracker.navigation.MoneyMateNavHost
 import com.myexpense.tracker.ui.screens.onboarding.OnboardingFlow
 import com.myexpense.tracker.ui.screens.splash.AnimatedSplashScreen
 import com.myexpense.tracker.ui.theme.MoneyMateTheme
+import com.myexpense.tracker.utils.NotificationHelper
+import com.myexpense.tracker.utils.toMinorUnits
+import com.myexpense.tracker.utils.toRupees
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     @Inject lateinit var seedRepository: SeedRepository
+    @Inject lateinit var recurringRuleRepository: RecurringRuleRepository
+    @Inject lateinit var transactionRepository: TransactionRepository
+    @Inject lateinit var achievementUnlocker: AchievementUnlocker
+    @Inject lateinit var notificationHelper: NotificationHelper
+
+    private val recurringChecked = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Android 12+ system splash (compat down to API 21 via core-splashscreen).
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Seed default categories + achievements on first launch.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 seedRepository.seedIfNeeded()
+                achievementUnlocker.onAppOpen()
+
+                // Feature 4: recurring automation — check due rules once per launch.
+                if (recurringChecked.compareAndSet(false, true)) {
+                    val due = recurringRuleRepository.getDueRules(System.currentTimeMillis())
+                    if (due.isNotEmpty()) {
+                        notificationHelper.showRecurringDue(due.size)
+                        dueRulesToAdd = due
+                    }
+                }
             }
         }
+
+        val widgetDestination = intent.getStringExtra("open_destination")
 
         setContent {
             val lockViewModel: LockViewModel = hiltViewModel()
             val settings by lockViewModel.settings.collectAsStateWithLifecycle()
 
+            // Feature 1: notification permission on first launch.
+            var askedPermission by rememberSaveable { mutableStateOf(false) }
+            val permissionLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { }
+
             MoneyMateTheme(
                 themeMode = settings.themeMode,
                 dynamicColors = settings.dynamicColors,
             ) {
-                AppRoot(settings = settings)
+                LaunchedEffect(Unit) {
+                    if (!askedPermission && Build.VERSION.SDK_INT >= 33) {
+                        askedPermission = true
+                        if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS) !=
+                            PackageManager.PERMISSION_GRANTED
+                        ) {
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                }
+                AppRoot(settings = settings, initialDestination = widgetDestination)
             }
         }
+    }
+
+    /** Feature 4: creates the confirmed recurring transactions and marks rules executed. */
+    fun confirmRecurring(ruleIds: Set<Long>, onDone: () -> Unit) {
+        val due = dueRulesToAdd ?: emptyList()
+        if (due.isEmpty()) { onDone(); return }
+        lifecycleScope.launch {
+            val now = System.currentTimeMillis()
+            due.filter { it.id in ruleIds }.forEach { rule ->
+                val transaction = Transaction(
+                    title = rule.title,
+                    amount = rule.amount.toMinorUnits(),
+                    type = rule.type,
+                    categoryId = rule.categoryId,
+                    accountId = rule.accountId,
+                    date = LocalDate.now(),
+                )
+                transactionRepository.save(transaction)
+                recurringRuleRepository.markExecuted(rule.id, now)
+                achievementUnlocker.onTransactionSaved(transaction)
+            }
+            dueRulesToAdd = null
+            onDone()
+        }
+    }
+
+    companion object {
+        /** Due recurring rules awaiting user confirmation (set during startup). */
+        @Volatile
+        var dueRulesToAdd: List<RecurringRuleEntity>? = null
     }
 }
 
 /**
- * Root of the app:
- * splash (2.5 s) → onboarding + setup (first launch) → home.
- * A returning user (onboarding already seen) goes straight from splash to home,
- * gated by the biometric lock when enabled.
+ * Root of the app: splash → onboarding + setup (first launch) → home.
+ * A returning user goes straight from splash to home, gated by the biometric
+ * lock when enabled. Widget taps can deep-link (e.g. to Reports).
  */
 @Composable
-private fun AppRoot(settings: SettingsRepository.Settings) {
+private fun AppRoot(settings: SettingsRepository.Settings, initialDestination: String? = null) {
     var splashDone by rememberSaveable { mutableStateOf(false) }
+    val destination by remember { mutableStateOf(initialDestination) }
 
     when {
         !splashDone -> AnimatedSplashScreen(onFinished = { splashDone = true })
@@ -108,11 +193,88 @@ private fun AppRoot(settings: SettingsRepository.Settings) {
                     onUnlocked = { locked.value = false },
                 )
             } else {
-                MoneyMateNavHost()
+                MoneyMateNavHost(initialDestination = destination)
+                RecurringDueDialog()
             }
         }
     }
 }
+
+/** Feature 4: confirm-and-create dialog for due recurring transactions. */
+@Composable
+private fun RecurringDueDialog() {
+    val context = LocalContext.current
+    var dueRules by remember { mutableStateOf(MainActivity.dueRulesToAdd ?: emptyList()) }
+    var selected by remember { mutableStateOf(MainActivity.dueRulesToAdd?.map { it.id }?.toSet() ?: emptySet()) }
+    var busy by remember { mutableStateOf(false) }
+
+    // Re-check shortly after composition in case the startup coroutine
+    // populated the due list after the first frame.
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(600)
+        dueRules = MainActivity.dueRulesToAdd ?: emptyList()
+        selected = MainActivity.dueRulesToAdd?.map { it.id }?.toSet() ?: emptySet()
+    }
+
+    if (dueRules.isEmpty()) return
+
+    AlertDialog(
+        onDismissRequest = { MainActivity.dueRulesToAdd = null; dueRules = emptyList() },
+        title = { Text("Recurring transactions due") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "${dueRules.size} recurring transaction(s) are due today. Add them?",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                dueRules.forEach { rule ->
+                    val ruleId = rule.id
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = ruleId in selected,
+                            onCheckedChange = { checked ->
+                                selected = if (checked) selected + ruleId else selected - ruleId
+                            },
+                        )
+                        Text(
+                            text = "${rule.title} · ${
+                                (rule.amount.toMinorUnits().let { com.myexpense.tracker.utils.MoneyFormatter.format(it) })
+                            }",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = !busy,
+                onClick = {
+                    busy = true
+                    val activity = context as? MainActivity
+                    if (activity != null) {
+                        activity.confirmRecurring(selected) {
+                            dueRules = emptyList()
+                        }
+                    } else {
+                        dueRules = emptyList()
+                    }
+                },
+            ) {
+                Text("Add selected")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                MainActivity.dueRulesToAdd = null
+                dueRules = emptyList()
+            }) {
+                Text("Not now")
+            }
+        },
+    )
+}
+
 
 /** Thin ViewModel that exposes settings to the activity (avoids manual flow collection). */
 @HiltViewModel

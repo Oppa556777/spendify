@@ -6,6 +6,7 @@ import com.myexpense.tracker.data.model.Account
 import com.myexpense.tracker.data.model.Goal
 import com.myexpense.tracker.data.model.GoalWithProgress
 import com.myexpense.tracker.data.repository.AccountRepository
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.GoalRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ data class GoalsUiState(
 class GoalsViewModel @Inject constructor(
     private val goalRepository: GoalRepository,
     private val accountRepository: AccountRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -42,7 +44,10 @@ class GoalsViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GoalsUiState())
 
     fun save(goal: Goal) {
-        viewModelScope.launch { goalRepository.save(goal) }
+        viewModelScope.launch {
+            goalRepository.save(goal)
+            achievementUnlocker.onGoalSaved()
+        }
     }
 
     fun delete(id: Long) {
@@ -50,6 +55,9 @@ class GoalsViewModel @Inject constructor(
     }
 
     fun addMoney(id: Long, amountMinor: Long) {
-        viewModelScope.launch { goalRepository.addMoney(id, amountMinor) }
+        viewModelScope.launch {
+            goalRepository.addMoney(id, amountMinor)
+            achievementUnlocker.onGoalSaved()
+        }
     }
 }

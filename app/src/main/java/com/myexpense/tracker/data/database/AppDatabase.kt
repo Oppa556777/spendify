@@ -62,7 +62,7 @@ import com.myexpense.tracker.data.database.entity.TransactionEntity
         AchievementEntity::class,
         AppSettingEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

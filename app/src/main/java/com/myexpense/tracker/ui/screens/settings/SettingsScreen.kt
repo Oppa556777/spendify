@@ -14,7 +14,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Fingerprint
@@ -55,6 +58,9 @@ fun SettingsScreen(
     onOpenGoals: () -> Unit,
     onOpenLoans: () -> Unit,
     onOpenSubscriptions: () -> Unit,
+    onOpenAchievements: () -> Unit,
+    onOpenSplitBill: () -> Unit,
+    onOpenAssets: () -> Unit,
     onOpenBackup: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -231,6 +237,24 @@ fun SettingsScreen(
                 title = "Subscriptions",
                 subtitle = "Recurring payments & reminders",
                 onClick = onOpenSubscriptions,
+            )
+            SettingRow(
+                icon = Icons.Filled.EmojiEvents,
+                title = "Achievements",
+                subtitle = "20 achievements, all free",
+                onClick = onOpenAchievements,
+            )
+            SettingRow(
+                icon = Icons.Filled.Group,
+                title = "Split Bill",
+                subtitle = "Divide bills with friends",
+                onClick = onOpenSplitBill,
+            )
+            SettingRow(
+                icon = Icons.Filled.TrendingUp,
+                title = "Assets",
+                subtitle = "Stocks, crypto, gold & more",
+                onClick = onOpenAssets,
             )
             SettingRow(
                 icon = Icons.Filled.Storage,

@@ -11,5 +11,6 @@ data class BillSplitEntity(
     val totalAmount: Double,
     val date: Long,
     val note: String? = null,
+    val paidByPersonId: Long? = null,   // who paid the full bill
     val createdAt: Long = System.currentTimeMillis(),
 )

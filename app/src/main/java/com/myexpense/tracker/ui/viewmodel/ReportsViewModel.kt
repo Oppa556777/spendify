@@ -14,6 +14,7 @@ import com.myexpense.tracker.data.model.NetWorthPoint
 import com.myexpense.tracker.data.model.ReportsPeriod
 import com.myexpense.tracker.data.model.TransactionType
 import com.myexpense.tracker.data.repository.AccountRepository
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.CategoryRepository
 import com.myexpense.tracker.data.repository.ExportRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
@@ -68,6 +69,7 @@ class ReportsViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
     private val categoryRepository: CategoryRepository,
     private val exportRepository: ExportRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -446,6 +448,7 @@ class ReportsViewModel @Inject constructor(
         viewModelScope.launch {
             val symbol = uiState.value.currencySymbol
             val result = exportRepository.exportCsv(uri, null, symbol)
+            if (result.isSuccess) achievementUnlocker.onExport()
             exportMessage.value = result.fold(
                 onSuccess = { "CSV saved: $it transactions" },
                 onFailure = { "CSV export failed: ${it.message}" },
@@ -458,6 +461,7 @@ class ReportsViewModel @Inject constructor(
             val symbol = uiState.value.currencySymbol
             val month = YearMonth.from(anchor.value)
             val result = exportRepository.exportPdf(uri, month, symbol)
+            if (result.isSuccess) achievementUnlocker.onExport()
             exportMessage.value = result.fold(
                 onSuccess = { "PDF report saved ($it transactions)" },
                 onFailure = { "PDF export failed: ${it.message}" },

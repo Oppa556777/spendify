@@ -168,6 +168,30 @@ class TransactionRepository @Inject constructor(
     fun observeLatestPerAccount(): Flow<List<Transaction>> =
         dao.observeLatestPerAccount().map { list -> list.map { it.toModel() } }
 
+    /** Advanced search with optional filters and Kotlin-side sorting. */
+    fun searchAdvanced(
+        query: String,
+        from: LocalDate?,
+        to: LocalDate?,
+        categoryId: Long?,
+        accountId: Long?,
+        minAmount: Double?,
+        maxAmount: Double?,
+        tagId: Long?,
+        personId: Long?,
+    ): Flow<List<Transaction>> =
+        dao.searchAdvanced(
+            query = query.trim(),
+            from = from?.toEpochMillis(),
+            to = to?.toEpochMillis(),
+            categoryId = categoryId,
+            accountId = accountId,
+            minAmount = minAmount,
+            maxAmount = maxAmount,
+            tagId = tagId,
+            personId = personId,
+        ).map { list -> list.map { it.toModel() } }
+
     /** Expense transactions in any of the given categories between dates. */
     fun observeExpensesForCategories(
         categoryIds: List<Long>,

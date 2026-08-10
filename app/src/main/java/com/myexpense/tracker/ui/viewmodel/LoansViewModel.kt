@@ -3,6 +3,7 @@ package com.myexpense.tracker.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myexpense.tracker.data.model.Loan
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.LoanRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +24,7 @@ data class LoansUiState(
 @HiltViewModel
 class LoansViewModel @Inject constructor(
     private val loanRepository: LoanRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -48,7 +50,10 @@ class LoansViewModel @Inject constructor(
     }
 
     fun markSettled(id: Long) {
-        viewModelScope.launch { loanRepository.markSettled(id) }
+        viewModelScope.launch {
+            loanRepository.markSettled(id)
+            achievementUnlocker.onLoanSettled()
+        }
     }
 
     fun addPayment(id: Long, amountMinor: Long) {

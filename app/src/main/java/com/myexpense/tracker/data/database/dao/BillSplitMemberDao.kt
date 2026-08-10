@@ -22,8 +22,14 @@ interface BillSplitMemberDao {
     @Query("DELETE FROM bill_split_members WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("SELECT * FROM bill_split_members WHERE id = :id")
+    suspend fun getById(id: Long): BillSplitMemberEntity?
+
     @Query("SELECT * FROM bill_split_members WHERE splitId = :splitId ORDER BY id ASC")
     fun observeBySplit(splitId: Long): Flow<List<BillSplitMemberEntity>>
+
+    @Query("SELECT * FROM bill_split_members ORDER BY splitId ASC, id ASC")
+    fun observeAll(): Flow<List<BillSplitMemberEntity>>
 
     @Query("SELECT * FROM bill_split_members WHERE splitId = :splitId ORDER BY id ASC")
     suspend fun getBySplit(splitId: Long): List<BillSplitMemberEntity>

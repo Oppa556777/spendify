@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ReceiptLong
@@ -101,6 +102,7 @@ import java.time.ZoneOffset
 @Composable
 fun AddEditTransactionScreen(
     onDone: () -> Unit,
+    onSplitBill: (() -> Unit)? = null,
     viewModel: AddEditTransactionViewModel = hiltViewModel(),
 ) {
     val state = viewModel.uiState
@@ -446,6 +448,26 @@ fun AddEditTransactionScreen(
                                 Text("Remove")
                             }
                         }
+                    }
+
+                    // 9b. Split bill shortcut
+                    onSplitBill?.let { splitBill ->
+                        DetailSelectRow(
+                            icon = {
+                                Box(contentAlignment = Alignment.Center) {
+                                    CategoryIcon(icon = null, color = Color(0xFF6C63FF), size = 36)
+                                    Icon(
+                                        Icons.Filled.Group,
+                                        contentDescription = null,
+                                        tint = Color(0xFF6C63FF),
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            },
+                            title = "Split Bill",
+                            subtitle = "Divide this expense with friends",
+                            onClick = splitBill,
+                        )
                     }
 
                     // 10. Recurring

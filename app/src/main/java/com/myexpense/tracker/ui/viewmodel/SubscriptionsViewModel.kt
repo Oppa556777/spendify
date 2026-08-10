@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.myexpense.tracker.data.model.Category
 import com.myexpense.tracker.data.model.Subscription
 import com.myexpense.tracker.data.model.monthlyFactor
+import com.myexpense.tracker.data.repository.AchievementUnlocker
 import com.myexpense.tracker.data.repository.CategoryRepository
 import com.myexpense.tracker.data.repository.SubscriptionRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
@@ -32,6 +33,7 @@ data class SubscriptionsUiState(
 class SubscriptionsViewModel @Inject constructor(
     private val subscriptionRepository: SubscriptionRepository,
     private val categoryRepository: CategoryRepository,
+    private val achievementUnlocker: AchievementUnlocker,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -63,7 +65,10 @@ class SubscriptionsViewModel @Inject constructor(
     fun setFilter(f: String?) { filter.value = f }
 
     fun save(subscription: Subscription) {
-        viewModelScope.launch { subscriptionRepository.save(subscription) }
+        viewModelScope.launch {
+            subscriptionRepository.save(subscription)
+            achievementUnlocker.onSubscriptionSaved()
+        }
     }
 
     fun delete(id: Long) {
