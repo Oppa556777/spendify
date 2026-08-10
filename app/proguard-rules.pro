@@ -1,24 +1,51 @@
-# MoneyMate – Expense Tracker ProGuard rules
+# MoneyMate – Expense Tracker ProGuard/R8 rules
 
-# Room
+# ── Room ─────────────────────────────────────────────────────────────────────
 -keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }
+-keep @androidx.room.Database class * { *; }
+-keep class * {
+    @androidx.room.* <fields>;
+    @androidx.room.* <methods>;
+}
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
 -dontwarn androidx.room.paging.**
 
-# Hilt / Dagger
--dontwarn dagger.hilt.**
+# ── Hilt / Dagger ────────────────────────────────────────────────────────────
 -keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+-keepclasseswithmembers class * {
+    @dagger.hilt.android.lifecycle.HiltViewModel *;
+}
+-dontwarn dagger.hilt.**
+-dontwarn javax.inject.**
 
-# Gson (backup/restore models)
--keep class com.myexpense.tracker.data.model.backup.** { *; }
--keepattributes Signature
--keepattributes *Annotation*
-
-# Vico charts
+# ── Vico charts ──────────────────────────────────────────────────────────────
+-keep class com.patrykandpatrick.vico.** { *; }
 -dontwarn com.patrykandpatrick.vico.**
 
-# OpenCSV
+# ── Kotlinx coroutines ───────────────────────────────────────────────────────
+-keep class kotlinx.coroutines.** { *; }
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory { *; }
+-keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory { *; }
+-dontwarn kotlinx.coroutines.**
+
+# ── Coil (image loading) ─────────────────────────────────────────────────────
+-keep class coil.** { *; }
+-dontwarn coil.**
+
+# ── Gson (backup/restore models) ─────────────────────────────────────────────
+-keep class com.myexpense.tracker.data.model.backup.** { *; }
+-keep class com.myexpense.tracker.data.model.** { *; }
+-keep class com.myexpense.tracker.data.database.entity.** { *; }
+
+# ── OpenCSV ──────────────────────────────────────────────────────────────────
 -dontwarn org.apache.commons.**
 -dontwarn org.apache.logging.log4j.**
 
-# Kotlinx coroutines
--dontwarn kotlinx.coroutines.**
+# ── Misc ─────────────────────────────────────────────────────────────────────
+-keepattributes InnerClasses

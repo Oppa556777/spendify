@@ -4,14 +4,32 @@
     android:versionCode="1"
     android:versionName="1.0.0">
 
-    <!-- Fully offline by design: NO INTERNET permission, no network code. -->
+    <!--
+        MoneyMate — fully offline by design.
+        NO INTERNET permission, NO network state permissions. All data stays on-device.
+    -->
 
+    <!-- Security -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <!-- Receipt attachments -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission
-        android:name="android.permission.USE_BIOMETRIC"
-        tools:targetApi="28" xmlns:tools="http://schemas.android.com/tools" />
+        android:name="android.permission.READ_MEDIA_IMAGES"
+        tools:targetApi="33" xmlns:tools="http://schemas.android.com/tools" />
     <uses-permission
-        android:name="android.permission.USE_FINGERPRINT"
-        tools:targetApi="26" xmlns:tools="http://schemas.android.com/tools" />
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Notifications & reminders -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-sdk
         android:minSdkVersion="26"

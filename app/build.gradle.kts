@@ -34,6 +34,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            isDebuggable = true
         }
     }
     compileOptions {
@@ -46,6 +47,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Note: with Kotlin 2.0.x the Compose compiler is bundled via the
+    // `org.jetbrains.kotlin.plugin.compose` plugin, so the legacy
+    // `composeOptions { kotlinCompilerExtensionVersion = "1.5.1" }` block is
+    // intentionally NOT used here (it would conflict with Kotlin 2.0.21).
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
