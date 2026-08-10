@@ -8,7 +8,7 @@ free, unlocked by default, and works forever without an internet connection.
 - ❌ No login, no sign-up, no ads, no subscriptions, no cloud
 - ✅ All data stored locally in SQLite on the device
 - ✅ Works fully offline forever; supports Android 8.0 (API 26) and up
-- ✅ Ships as a signed, installable APK (`apk/MoneyMate-v1.0.4.apk`)
+- ✅ Ships as a signed, installable APK (`apk/MoneyMate-v1.0.5.apk`)
 
 ## Two implementations
 
@@ -135,13 +135,13 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
 
 1. On your phone, enable **Settings → Security → Install unknown apps** for
    your browser/files app.
-2. Download `apk/MoneyMate-v1.0.4.apk` (direct link below) and tap it.
+2. Download `apk/MoneyMate-v1.0.5.apk` (direct link below) and tap it.
 3. If you had a **previous MoneyMate installed with a different signing key**,
    uninstall it first (Android won't overwrite apps signed by another key):
    `Settings → Apps → MoneyMate → Uninstall`, then install the new APK.
 4. If installing over USB: `adb install -r apk/MoneyMate-v1.0.0.apk`.
 
-Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.4.apk
+Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.5.apk
 
 ### If the app closes right after opening
 The app now captures startup crashes: it shows a Toast with the error and
@@ -164,13 +164,13 @@ Then share the stack trace (or the Toast text) — that pinpoints the fix.
 
 1. On your phone, enable **Settings → Security → Install unknown apps** for
    your browser/files app.
-2. Download `apk/MoneyMate-v1.0.4.apk` (direct link below) and tap it.
+2. Download `apk/MoneyMate-v1.0.5.apk` (direct link below) and tap it.
 3. If you had a **previous MoneyMate installed with a different signing key**,
    uninstall it first (Android won't overwrite apps signed by another key):
    `Settings → Apps → MoneyMate → Uninstall`, then install the new APK.
 4. If installing over USB: `adb install -r apk/MoneyMate-v1.0.0.apk`.
 
-Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.4.apk
+Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.5.apk
 
 ## Building in a restricted-egress environment
 
@@ -183,7 +183,7 @@ permission (this repo was authored by a GitHub App without it, which is why
 the file lives under `ci/`).
 
 For a no-Gradle build, use `appclassic/build_offline.sh` (see
-`appclassic/README.md`) — this is how `apk/MoneyMate-v1.0.4.apk` was produced
+`appclassic/README.md`) — this is how `apk/MoneyMate-v1.0.5.apk` was produced
 and verified (`aapt2 dump badging` + `jarsigner -verify`).
 
 ## Project layout

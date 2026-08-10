@@ -64,7 +64,7 @@ fun monthNav(
     context: Context,
     month: String,
     onPrev: () -> Unit,
-    onNext: () -> Unit,
+    onNext: () -> Unit
 ): LinearLayout {
     val row = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
@@ -94,7 +94,7 @@ fun monthNav(
 
 fun sectionLabel(context: Context, text: String): TextView =
     TextView(context).apply {
-        this.text = text.uppercase()
+        this.text = text.toUpperCase()
         textSize = 12f
         typeface = Typeface.create(typeface, Typeface.BOLD)
         setTextColor(context.color(R.color.primary))
@@ -105,7 +105,7 @@ fun LinearLayout.addRow(
     context: Context,
     title: String,
     subtitle: String? = null,
-    onClick: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
 ): LinearLayout {
     val row = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
@@ -155,7 +155,7 @@ fun confirm(
     title: String,
     message: String,
     positive: String = "Delete",
-    onYes: () -> Unit,
+    onYes: () -> Unit
 ) {
     AlertDialog.Builder(activity)
         .setTitle(title)

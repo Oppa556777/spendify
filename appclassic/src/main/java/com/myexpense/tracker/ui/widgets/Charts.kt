@@ -14,7 +14,7 @@ import com.myexpense.tracker.util.Format
 /** Donut chart for the category breakdown. */
 class DonutChartView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
+    attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
     private var stats: List<CategoryStat> = emptyList()
@@ -30,7 +30,7 @@ class DonutChartView @JvmOverloads constructor(
 
     fun setStats(list: List<CategoryStat>) {
         stats = list
-        total = list.sumOf { it.total }
+        total = list.fold(0L) { acc, s -> acc + s.total }
         centerText = Format.money(total, "")
         subText = "spent"
         invalidate()
@@ -74,7 +74,7 @@ class DonutChartView @JvmOverloads constructor(
 /** Grouped column chart: income + expense per month (12 months). */
 class BarChartView @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
+    attrs: AttributeSet? = null
 ) : View(context, attrs) {
 
     private var series: List<Pair<String, Pair<Long, Long>>> = emptyList()
@@ -97,7 +97,7 @@ class BarChartView @JvmOverloads constructor(
         val h = height.toFloat()
         val labelH = 40f
         val chartH = h - labelH - 12f
-        val maxVal = series.maxOfOrNull { maxOf(it.second.first, it.second.second) } ?: 1L
+        val maxVal = series.map { kotlin.math.max(it.second.first, it.second.second) }.max() ?: 1L
         val n = series.size
         if (n == 0) return
 

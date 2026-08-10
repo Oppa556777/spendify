@@ -40,7 +40,7 @@ echo "== aapt2 link =="
   -I "$ANDROID_JAR" \
   --manifest "$ROOT/src/main/AndroidManifest.xml" \
   --java "$BUILD/gen" \
-  --min-sdk-version 26 \
+  --min-sdk-version 21 \
   --target-sdk-version 34 \
   "$BUILD/res.zip"
 
@@ -59,7 +59,7 @@ echo "== prepare stdlib for dexing =="
 
 echo "== dex =="
 "$JDK8_HOME/bin/java" -Xmx2g -cp "$DX_JAR" com.android.dx.command.Main \
-  --dex --min-sdk-version=26 --output="$BUILD/apk/classes.dex" \
+  --dex --min-sdk-version=21 --output="$BUILD/apk/classes.dex" \
   "$BUILD/classes" "$BUILD/gen-out" "$BUILD/stdlib.jar"
 
 echo "== package =="

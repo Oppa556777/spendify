@@ -66,7 +66,7 @@ class CategoriesActivity : Activity() {
         val cats = db.getCategories(selectedType)
         if (cats.isEmpty()) {
             body.addView(TextView(this).apply {
-                text = "No ${selectedType.name.lowercase()} categories yet."
+                text = "No ${selectedType.name.toLowerCase()} categories yet."
                 setPadding(dp(24), dp(32), dp(24), dp(8))
                 gravity = Gravity.CENTER
                 setTextColor(color(R.color.subtext))
@@ -196,7 +196,7 @@ class CategoriesActivity : Activity() {
                     type = selectedType,
                     icon = icon,
                     color = color,
-                    sortOrder = existing?.sortOrder ?: 0,
+                    sortOrder = existing?.sortOrder ?: 0
                 )
             )
             dialog.dismiss()

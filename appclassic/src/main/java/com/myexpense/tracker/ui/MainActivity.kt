@@ -100,7 +100,7 @@ class MainActivity : Activity() {
             Triple("💸", "Spends", 1),
             Triple("📊", "Stats", 2),
             Triple("🎯", "Budgets", 3),
-            Triple("⚙️", "More", 4),
+            Triple("⚙️", "More", 4)
         )
         val tabViews = tabs.map { (emoji, label, index) ->
             LinearLayout(this).apply {
@@ -278,7 +278,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             addView(TextView(this@MainActivity).apply {
-                text = label.uppercase()
+                text = label.toUpperCase()
                 textSize = 11f
                 setTextColor(color(R.color.subtext))
             })
@@ -322,7 +322,7 @@ class MainActivity : Activity() {
         categoryName: String,
         icon: String,
         iconColor: Int,
-        accountName: String?,
+        accountName: String?
     ): LinearLayout {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -559,7 +559,7 @@ class MainActivity : Activity() {
                             setPadding(dp(12), 0, 0, 0)
                         }
                     })
-                    val total = stats.sumOf { it.total }
+                    val total = stats.fold(0L) { acc, s -> acc + s.total }
                     val pct = if (total > 0) stat.total * 100 / total else 0
                     addView(TextView(this@MainActivity).apply {
                         text = "${Format.money(stat.total, symbol)}  $pct%"
@@ -604,8 +604,8 @@ class MainActivity : Activity() {
         col.addView(monthNav(this, budgetMonth, { budgetMonth = Format.addMonths(budgetMonth, -1); showTab(3) }, { budgetMonth = Format.addMonths(budgetMonth, 1); showTab(3) }))
 
         val rows = db.getBudgetRows(budgetMonth)
-        val totalLimit = rows.sumOf { it.budget.amount }
-        val totalSpent = rows.sumOf { it.spent }
+        val totalLimit = rows.fold(0L) { acc, r -> acc + r.budget.amount }
+        val totalSpent = rows.fold(0L) { acc, r -> acc + r.spent }
         col.addView(TextView(this).apply {
             text = "Total budget: ${Format.money(totalLimit, symbol)}    Spent: ${Format.money(totalSpent, symbol)}"
             textSize = 13f
@@ -697,7 +697,7 @@ class MainActivity : Activity() {
                         categoryId = categoryId,
                         amount = (value * 100).toLong().coerceAtLeast(1),
                         month = existing?.month,
-                        isRecurring = existing?.isRecurring ?: true,
+                        isRecurring = existing?.isRecurring ?: true
                     )
                 )
                 dialog.dismiss()

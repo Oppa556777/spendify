@@ -50,8 +50,8 @@ object Export {
         val db = AppDb.get(context)
         val catMap = db.getAllCategories().associateBy { it.id }
         val rows = db.getTransactions(month, null, null, null, "")
-        val income = rows.filter { it.type == TxType.INCOME }.sumOf { it.amount }
-        val expense = rows.filter { it.type == TxType.EXPENSE }.sumOf { it.amount }
+        val income = rows.filter { it.type == TxType.INCOME }.fold(0L) { acc, t -> acc + t.amount }
+        val expense = rows.filter { it.type == TxType.EXPENSE }.fold(0L) { acc, t -> acc + t.amount }
 
         val pageWidth = 595
         val pageHeight = 842
@@ -221,14 +221,14 @@ object Export {
     private fun JSONObject.toCategory() = Category(
         id = optLong("id"), name = getString("name"),
         type = TxType.valueOf(getString("type")), icon = optString("icon", "📦"),
-        color = optInt("color", 0xFF4CAF50.toInt()), sortOrder = optInt("sortOrder"),
+        color = optInt("color", 0xFF4CAF50.toInt()), sortOrder = optInt("sortOrder")
     )
 
     private fun JSONObject.toAccount() = Account(
         id = optLong("id"), name = getString("name"),
         type = try { AccountType.valueOf(getString("type")) } catch (e: Exception) { AccountType.CASH },
         initialBalance = optLong("initialBalance"), color = optInt("color", 0xFF3F51B5.toInt()),
-        icon = optString("icon", "💳"),
+        icon = optString("icon", "💳")
     )
 
     private fun JSONObject.toTransaction() = Transaction(
@@ -236,12 +236,12 @@ object Export {
         amount = getLong("amount"),
         categoryId = if (has("categoryId")) getLong("categoryId") else null,
         accountId = if (has("accountId")) getLong("accountId") else null,
-        note = optString("note"), date = optString("date"),
+        note = optString("note"), date = optString("date")
     )
 
     private fun JSONObject.toBudget() = Budget(
         id = optLong("id"), categoryId = getLong("categoryId"), amount = getLong("amount"),
         month = if (has("month")) getString("month") else null,
-        isRecurring = optBoolean("isRecurring", true),
+        isRecurring = optBoolean("isRecurring", true)
     )
 }

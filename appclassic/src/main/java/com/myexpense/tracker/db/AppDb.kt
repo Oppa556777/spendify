@@ -178,7 +178,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
         type: TxType?,
         categoryId: Long?,
         accountId: Long?,
-        query: String,
+        query: String
     ): List<Transaction> {
         val where = StringBuilder()
         val args = ArrayList<String>()
@@ -255,7 +255,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
                 count = cnt,
                 categoryName = c?.name ?: "Uncategorized",
                 categoryIcon = c?.icon ?: "❓",
-                categoryColor = c?.color ?: 0xFF9E9E9E.toInt(),
+                categoryColor = c?.color ?: 0xFF9E9E9E.toInt()
             )
         }
     }
@@ -317,7 +317,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
                 categoryName = c?.name ?: "Category",
                 categoryIcon = c?.icon ?: "❓",
                 categoryColor = c?.color ?: 0xFF4CAF50.toInt(),
-                spent = spentMap[b.categoryId] ?: 0L,
+                spent = spentMap[b.categoryId] ?: 0L
             )
         }
     }
@@ -376,7 +376,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
         type = TxType.valueOf(getString(getColumnIndexOrThrow("type"))),
         icon = getString(getColumnIndexOrThrow("icon")),
         color = getInt(getColumnIndexOrThrow("color")),
-        sortOrder = getInt(getColumnIndexOrThrow("sortOrder")),
+        sortOrder = getInt(getColumnIndexOrThrow("sortOrder"))
     )
 
     private fun Cursor.toAccounts(): List<Account> {
@@ -391,7 +391,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
         type = AccountType.valueOf(getString(getColumnIndexOrThrow("type"))),
         initialBalance = getLong(getColumnIndexOrThrow("initialBalance")),
         color = getInt(getColumnIndexOrThrow("color")),
-        icon = getString(getColumnIndexOrThrow("icon")),
+        icon = getString(getColumnIndexOrThrow("icon"))
     )
 
     private fun Cursor.toTransactions(): List<Transaction> {
@@ -407,7 +407,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
         categoryId = if (isNull(getColumnIndexOrThrow("categoryId"))) null else getLong(getColumnIndexOrThrow("categoryId")),
         accountId = if (isNull(getColumnIndexOrThrow("accountId"))) null else getLong(getColumnIndexOrThrow("accountId")),
         note = getString(getColumnIndexOrThrow("note")),
-        date = getString(getColumnIndexOrThrow("date")),
+        date = getString(getColumnIndexOrThrow("date"))
     )
 
     private fun Cursor.toBudgets(): List<Budget> {
@@ -420,7 +420,7 @@ class AppDb(context: Context) : SQLiteOpenHelper(context, "moneymate.db", null, 
                     categoryId = getLong(getColumnIndexOrThrow("categoryId")),
                     amount = getLong(getColumnIndexOrThrow("amount")),
                     month = if (isNull(monthIdx)) null else getString(monthIdx),
-                    isRecurring = getInt(getColumnIndexOrThrow("isRecurring")) == 1,
+                    isRecurring = getInt(getColumnIndexOrThrow("isRecurring")) == 1
                 )
             )
         }

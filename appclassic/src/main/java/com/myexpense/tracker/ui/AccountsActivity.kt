@@ -78,7 +78,7 @@ class AccountsActivity : Activity() {
         val accounts = db.getAccounts()
         val balances = db.getBalances()
 
-        val total = accounts.sumOf { it.initialBalance + (balances[it.id] ?: 0L) }
+        val total = accounts.fold(0L) { acc, a -> acc + a.initialBalance + (balances[a.id] ?: 0L) }
         body.addView(TextView(this).apply {
             text = "Total balance: ${Format.money(total, symbol)}"
             textSize = 20f
@@ -128,7 +128,7 @@ class AccountsActivity : Activity() {
                     setTextColor(color(R.color.text))
                 })
                 addView(TextView(this@AccountsActivity).apply {
-                    text = account.type.name.lowercase().replaceFirstChar { it.uppercase() }
+                    text = account.type.name.toLowerCase().capitalize()
                     textSize = 12f
                     setTextColor(color(R.color.subtext))
                 })
@@ -159,9 +159,9 @@ class AccountsActivity : Activity() {
         builder.addAmountField(initial) { initial = it }
 
         builder.addLabel("Type")
-        val typeNames = AccountType.entries.map { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }.toTypedArray()
-        builder.addSpinner(typeNames, AccountType.entries.indexOf(type)) { idx ->
-            type = AccountType.entries[idx]
+        val typeNames = AccountType.values().map { it.name.toLowerCase().capitalize() }.toTypedArray()
+        builder.addSpinner(typeNames, AccountType.values().indexOf(type)) { idx ->
+            type = AccountType.values()[idx]
         }
 
         builder.addLabel("Icon")
@@ -226,7 +226,7 @@ class AccountsActivity : Activity() {
                     type = type,
                     initialBalance = (amount * 100).toLong(),
                     color = color,
-                    icon = icon,
+                    icon = icon
                 )
             )
             dialog.dismiss()

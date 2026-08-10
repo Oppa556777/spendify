@@ -308,7 +308,7 @@ class AddEditTransactionActivity : Activity() {
             categoryId = categoryId,
             accountId = accountId,
             note = noteInput.text.toString().trim(),
-            date = dateIso,
+            date = dateIso
         )
         if (editingId == 0L) db.insertTransaction(t) else db.updateTransaction(t)
         setResult(RESULT_OK)

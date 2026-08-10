@@ -44,7 +44,7 @@ object Seed {
             c("Freelance", TxType.INCOME, "💻", 0xFF42A5F5.toInt(), 3),
             c("Investments", TxType.INCOME, "📈", 0xFFAB47BC.toInt(), 4),
             c("Gifts", TxType.INCOME, "🎁", 0xFFEC407A.toInt(), 5),
-            c("Other Income", TxType.INCOME, "➕", 0xFF9E9E9E.toInt(), 99),
+            c("Other Income", TxType.INCOME, "➕", 0xFF9E9E9E.toInt(), 99)
         )
     }
 
@@ -52,7 +52,7 @@ object Seed {
         "🍔", "🛒", "🚌", "⛽", "🛍️", "🎬", "🏥", "🏠", "⚡", "🎓", "✈️", "🧾", "📦",
         "💰", "💼", "💻", "📈", "🎁", "➕", "☕", "🍕", "🍺", "🎮", "🎵", "📱", "📺",
         "💊", "🏋️", "🐶", "👶", "💍", "🚕", "🚗", "🚆", "✂️", "🔧", "🧹", "🌿", "📚",
-        "🧸", "🎂", "💐", "📷", "⌚", "👔", "🧥", "💳", "🏦", "💵", "📉", "📊", "⭐", "❓",
+        "🧸", "🎂", "💐", "📷", "⌚", "👔", "🧥", "💳", "🏦", "💵", "📉", "📊", "⭐", "❓"
     )
 
     val colorPalette = listOf(
@@ -60,6 +60,6 @@ object Seed {
         0xFF3949AB.toInt(), 0xFF1E88E5.toInt(), 0xFF039BE5.toInt(), 0xFF00ACC1.toInt(),
         0xFF00897B.toInt(), 0xFF43A047.toInt(), 0xFF7CB342.toInt(), 0xFFC0CA33.toInt(),
         0xFFFDD835.toInt(), 0xFFFFB300.toInt(), 0xFFFB8C00.toInt(), 0xFFF4511E.toInt(),
-        0xFF6D4C41.toInt(), 0xFF757575.toInt(), 0xFF546E7A.toInt(),
+        0xFF6D4C41.toInt(), 0xFF757575.toInt(), 0xFF546E7A.toInt()
     )
 }
