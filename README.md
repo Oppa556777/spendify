@@ -57,8 +57,14 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   emojis, 50+ currency dropdown, 20-color + random picker, 100+ icon grid,
   default toggle); account detail screen with 30-day balance line chart,
   income/expense filters, transaction list and Transfer From/To button
-- **Budgets** – monthly per-category limits with progress bars & overspend
-  warnings
+- **Budgets** – overview with total budgeted/spent/remaining + progress ring,
+  All/Active/Over Budget/Completed filter tabs, cards with category-color
+  accent border, animated color-coded progress, over-budget warning state;
+  add/edit sheet with All/Specific/Multiple-category scopes (join table),
+  amount calculator keypad, Daily/Weekly/Monthly/Yearly/Custom periods,
+  50–90% alert slider, color picker and custom date range; detail screen with
+  spent-vs-remaining donut, day-by-day spending line, category transactions
+  and edit/delete
 - **Reports & Analytics** – 10 interactive Canvas charts in M3 cards: grouped
   income/expense bars, expense donut with breakdown, this-vs-last-month daily
   spending lines, GitHub-style spending heatmap, top-5 category trend lines,

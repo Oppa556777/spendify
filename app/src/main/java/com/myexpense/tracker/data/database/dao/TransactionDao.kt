@@ -42,6 +42,13 @@ data class MonthlyCategoryRow(
     val total: Double,
 )
 
+/** One day × category cell of the expense aggregation. */
+data class DailyCategoryRow(
+    val day: String,            // "yyyy-MM-dd"
+    val categoryId: Long?,
+    val total: Double,
+)
+
 /** Income vs expense for a period in one row. */
 data class PeriodTotalsRow(
     val income: Double,
@@ -237,6 +244,30 @@ interface TransactionDao {
         """
     )
     fun observeLatestPerAccount(): Flow<List<TransactionEntity>>
+
+    /** Daily × category expense aggregation (used to slice budget windows). */
+    @Query(
+        """
+        SELECT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime') AS day,
+               categoryId,
+               SUM(amount) AS total
+        FROM transactions
+        WHERE type = 'EXPENSE' AND date BETWEEN :from AND :to
+        GROUP BY day, categoryId
+        ORDER BY day ASC
+        """
+    )
+    fun observeDailyCategoryTotals(from: Long, to: Long): Flow<List<DailyCategoryRow>>
+
+    /** Transactions in any of the given categories between dates (expenses). */
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE type = 'EXPENSE' AND categoryId IN (:categoryIds) AND date BETWEEN :from AND :to
+        ORDER BY date DESC, id DESC
+        """
+    )
+    fun observeByCategories(categoryIds: List<Long>, from: Long, to: Long): Flow<List<TransactionEntity>>
 
     @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM transactions")
     fun observeTotalIncome(): Flow<Double>

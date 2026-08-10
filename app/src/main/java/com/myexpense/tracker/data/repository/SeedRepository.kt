@@ -24,16 +24,17 @@ class SeedRepository @Inject constructor(
 ) {
 
     suspend fun seedIfNeeded() {
-        val firstRunDone = settingsRepository.settings.first().firstRunComplete
-        if (firstRunDone) return
-
+        // Re-seed if the tables are empty (e.g. after a destructive migration),
+        // even when the DataStore flag was already set.
         if (categoryRepository.getAll().isEmpty()) {
             categoryRepository.insertAll(defaultCategories())
         }
         if (achievementDao.getAll().isEmpty()) {
             achievementDao.insertAll(sampleAchievements())
         }
-        settingsRepository.setSeedingDone()
+        if (!settingsRepository.settings.first().firstRunComplete) {
+            settingsRepository.setSeedingDone()
+        }
     }
 
     companion object {

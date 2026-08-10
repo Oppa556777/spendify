@@ -25,6 +25,7 @@ import com.myexpense.tracker.ui.screens.accounts.AccountDetailScreen
 import com.myexpense.tracker.ui.screens.addedit.AddEditTransactionScreen
 import com.myexpense.tracker.ui.screens.backup.BackupRestoreScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetsScreen
+import com.myexpense.tracker.ui.screens.budgets.BudgetDetailScreen
 import com.myexpense.tracker.ui.screens.categories.CategoriesScreen
 import com.myexpense.tracker.ui.screens.home.HomeScreen
 import com.myexpense.tracker.ui.screens.search.SearchScreen
@@ -120,6 +121,17 @@ fun MoneyMateNavHost() {
                 composable(Routes.BUDGETS) {
                     BudgetsScreen(
                         onBack = { navController.popBackStack() },
+                        onBudgetClick = { id -> navController.navigate(Routes.budgetDetail(id)) },
+                    )
+                }
+
+                composable(
+                    route = Routes.BUDGET_DETAIL,
+                    arguments = listOf(navArgument("id") { type = NavType.LongType }),
+                ) {
+                    BudgetDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onEditTransaction = { id -> navController.navigate(Routes.editTransaction(id)) },
                     )
                 }
 

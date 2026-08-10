@@ -168,6 +168,16 @@ class TransactionRepository @Inject constructor(
     fun observeLatestPerAccount(): Flow<List<Transaction>> =
         dao.observeLatestPerAccount().map { list -> list.map { it.toModel() } }
 
+    /** Expense transactions in any of the given categories between dates. */
+    fun observeExpensesForCategories(
+        categoryIds: List<Long>,
+        from: LocalDate,
+        to: LocalDate,
+    ): Flow<List<Transaction>> =
+        if (categoryIds.isEmpty()) kotlinx.coroutines.flow.flowOf(emptyList())
+        else dao.observeByCategories(categoryIds, from.toEpochMillis(), to.toEpochMillis())
+            .map { list -> list.map { it.toModel() } }
+
     suspend fun save(transaction: Transaction): Long {
         val entity = transaction.toEntity()
         return if (transaction.id == 0L) dao.insert(entity) else {

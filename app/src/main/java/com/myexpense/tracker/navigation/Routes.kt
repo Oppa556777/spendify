@@ -16,10 +16,12 @@ object Routes {
     const val ADD_TRANSACTION = "transaction/add?type={type}&from={from}"
     const val EDIT_TRANSACTION = "transaction/edit/{id}"
     const val ACCOUNT_DETAIL = "account/detail/{id}"
+    const val BUDGET_DETAIL = "budget/detail/{id}"
     const val ONBOARDING = "onboarding"
 
     fun addTransaction(type: TransactionType): String = "transaction/add?type=${type.name}"
     fun transferFrom(accountId: Long): String = "transaction/add?type=TRANSFER&from=$accountId"
     fun editTransaction(id: Long) = "transaction/edit/$id"
     fun accountDetail(id: Long) = "account/detail/$id"
+    fun budgetDetail(id: Long) = "budget/detail/$id"
 }

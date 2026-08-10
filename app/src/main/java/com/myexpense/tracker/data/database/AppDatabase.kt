@@ -23,6 +23,7 @@ import com.myexpense.tracker.data.database.entity.AppSettingEntity
 import com.myexpense.tracker.data.database.entity.AssetEntity
 import com.myexpense.tracker.data.database.entity.BillSplitEntity
 import com.myexpense.tracker.data.database.entity.BillSplitMemberEntity
+import com.myexpense.tracker.data.database.entity.BudgetCategoryEntity
 import com.myexpense.tracker.data.database.entity.BudgetEntity
 import com.myexpense.tracker.data.database.entity.CategoryEntity
 import com.myexpense.tracker.data.database.entity.GoalEntity
@@ -48,6 +49,7 @@ import com.myexpense.tracker.data.database.entity.TransactionEntity
         CategoryEntity::class,
         TransactionEntity::class,
         BudgetEntity::class,
+        BudgetCategoryEntity::class,
         GoalEntity::class,
         LoanEntity::class,
         SubscriptionEntity::class,
@@ -60,7 +62,7 @@ import com.myexpense.tracker.data.database.entity.TransactionEntity
         AchievementEntity::class,
         AppSettingEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

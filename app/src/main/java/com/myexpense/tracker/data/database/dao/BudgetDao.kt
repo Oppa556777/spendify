@@ -86,4 +86,17 @@ interface BudgetDao {
         """
     )
     fun observeBudgetStatus(from: Long, to: Long): Flow<List<BudgetStatusRow>>
+
+    // ── Multi-category join table ──────────────────────────────────────────
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategories(rows: List<com.myexpense.tracker.data.database.entity.BudgetCategoryEntity>)
+
+    @Query("DELETE FROM budget_categories WHERE budgetId = :budgetId")
+    suspend fun deleteCategoriesFor(budgetId: Long)
+
+    @Query("SELECT * FROM budget_categories")
+    fun observeAllCategories(): Flow<List<com.myexpense.tracker.data.database.entity.BudgetCategoryEntity>>
+
+    @Query("SELECT * FROM budget_categories WHERE budgetId = :budgetId")
+    fun observeCategories(budgetId: Long): Flow<List<com.myexpense.tracker.data.database.entity.BudgetCategoryEntity>>
 }
