@@ -38,29 +38,48 @@ class MainActivity : Activity() {
     private var statsMonth = AppDb.currentMonth()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeChoice()
-        super.onCreate(savedInstanceState)
-        db = AppDb.get(this)
-        Seed.seedIfNeeded(this)
-        symbol = Prefs.currency(this)
-        month = AppDb.currentMonth()
+        try {
+            applyThemeChoice()
+            super.onCreate(savedInstanceState)
+            db = AppDb.get(this)
+            Seed.seedIfNeeded(this)
+            symbol = Prefs.currency(this)
+            month = AppDb.currentMonth()
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(color(R.color.bg))
-        }
-        contentFrame = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
-            )
-        }
-        bottomBar = buildBottomBar()
-        root.addView(contentFrame)
-        root.addView(bottomBar)
-        setContentView(root)
+            val root = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundColor(color(R.color.bg))
+            }
+            contentFrame = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+                )
+            }
+            bottomBar = buildBottomBar()
+            root.addView(contentFrame)
+            root.addView(bottomBar)
+            setContentView(root)
 
-        showTab(0)
+            showTab(0)
+        } catch (t: Throwable) {
+            // Never die silently: log + show a readable error screen.
+            try {
+                android.util.Log.e("MoneyMate", "startup crash", t)
+                val sw = java.io.StringWriter()
+                t.printStackTrace(java.io.PrintWriter(sw))
+                val text = TextView(this).apply {
+                    setTextColor(color(R.color.text))
+                    textSize = 14f
+                    setPadding(dp(24), dp(24), dp(24), dp(24))
+                    text = "MoneyMate hit an error:\n\n${t.javaClass.name}: ${t.message}\n\n" +
+                        sw.toString().take(1500) +
+                        "\n\nCrash log saved at: " + filesDir.absolutePath + "/crash.log"
+                }
+                setContentView(text)
+            } catch (_: Throwable) {
+            }
+        }
     }
 
     override fun onResume() {
