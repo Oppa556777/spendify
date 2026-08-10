@@ -65,15 +65,15 @@ echo "== dex =="
 echo "== package =="
 (cd "$BUILD/apk" && "$JDK8_HOME/bin/jar" uf base.apk classes.dex)
 
-echo "== sign (apksigner v1+v2+v3) =="
-if [ ! -f "$BUILD/debug.keystore" ]; then
-  "$JDK8_HOME/bin/keytool" -genkeypair -keystore "$BUILD/debug.keystore" \
-    -alias androiddebugkey -storepass android -keypass android \
-    -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
-fi
+echo "== zipalign (4-byte data alignment) =="
+python3 "$ROOT/zipalign.py" "$BUILD/apk/base.apk" "$BUILD/apk/base-aligned.apk"
+mv "$BUILD/apk/base-aligned.apk" "$BUILD/apk/base.apk"
+
+echo "== sign (apksigner v1+v2+v3, stable keystore) =="
+KS="$ROOT/keystore/moneymate.keystore"
 "$JDK8_HOME/bin/java" -jar "$APKSIGNER" sign \
-  --ks "$BUILD/debug.keystore" --ks-pass pass:android \
-  --ks-key-alias androiddebugkey --key-pass pass:android \
+  --ks "$KS" --ks-pass pass:moneymate123 \
+  --ks-key-alias moneymate --key-pass pass:moneymate123 \
   --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
   --out "$BUILD/apk/base-signed.apk" "$BUILD/apk/base.apk"
 mv "$BUILD/apk/base-signed.apk" "$BUILD/apk/base.apk"
