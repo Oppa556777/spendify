@@ -66,6 +66,10 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
 
+    /** Distinct titles from history — used for smart suggestions in the add form. */
+    @Query("SELECT DISTINCT title FROM transactions WHERE title != '' ORDER BY id DESC LIMIT 30")
+    fun recentTitles(): Flow<List<String>>
+
     // ── Date-range filters & search ─────────────────────────────────────────
     @Query("SELECT * FROM transactions WHERE date BETWEEN :from AND :to ORDER BY date DESC, id DESC")
     fun observeBetween(from: Long, to: Long): Flow<List<TransactionEntity>>

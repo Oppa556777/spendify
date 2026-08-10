@@ -63,6 +63,12 @@ class AccountRepository @Inject constructor(
         return true
     }
 
+    /** Applies a delta (minor units) to an account's stored balance. */
+    suspend fun adjustBalance(accountId: Long, deltaMinor: Long) {
+        val account = dao.getById(accountId) ?: return
+        dao.update(account.copy(balance = account.balance + deltaMinor.toRupees()))
+    }
+
     suspend fun insertAll(accounts: List<Account>) =
         dao.insertAll(accounts.map { it.toEntity() })
 

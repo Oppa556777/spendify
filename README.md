@@ -39,8 +39,15 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   progress cards, swipe-to-edit/delete transactions with a detail bottom
   sheet, savings goal rings, subscription reminders, floating pill bottom nav
   with a spring-animated + speed dial
-- **Transactions** – add / edit / delete expenses & incomes with category,
-  account, date and note; filter by month, type, category, account; search
+- **Transactions** – full-screen bottom-sheet add/edit with a built-in
+  calculator keypad (÷×−+), type tabs that recolor the header (red/green/
+  blue), smart title suggestions from history, category grid picker with
+  search + quick-add, account picker with live balances, date/time pickers,
+  tag multi-select, person/location/note fields, camera & gallery receipt
+  attachment (FileProvider + Coil), recurring rules (frequency/interval/end
+  date), transfer From↔To accounts with an animated swap arrow, validation
+  with snackbars, haptic + success animation on save, and real-time balance
+  updates; filter by month, type, category, account; search
 - **Categories** – 18 built-in defaults, fully editable; pick from emoji icons
   (classic) / 100+ Material icons (Compose) and a color palette
 - **Accounts** – cash, bank, card, e-wallet… with live balances

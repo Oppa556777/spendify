@@ -23,6 +23,28 @@ object DateUtils {
 
     fun fullDate(date: LocalDate): String = date.format(fullDate)
 
+    /** "9 Aug 2026" */
+    fun mediumDate(date: LocalDate): String =
+        date.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()))
+
+    /** "Today" when the date is today, otherwise "9 Aug 2026". */
+    fun chipDate(date: LocalDate): String =
+        if (date == LocalDate.now()) "Today" else mediumDate(date)
+
+    /** "14:30" → "2:30 PM". */
+    fun timeLabel(hhmm: String): String {
+        if (hhmm.length != 5) return hhmm
+        val hour = hhmm.substring(0, 2).toIntOrNull() ?: return hhmm
+        val minute = hhmm.substring(3, 5)
+        val suffix = if (hour >= 12) "PM" else "AM"
+        val displayHour = when {
+            hour == 0 -> 12
+            hour > 12 -> hour - 12
+            else -> hour
+        }
+        return "$displayHour:$minute $suffix"
+    }
+
     fun dayOfWeek(date: LocalDate): String = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
 
     fun today(): LocalDate = LocalDate.now()

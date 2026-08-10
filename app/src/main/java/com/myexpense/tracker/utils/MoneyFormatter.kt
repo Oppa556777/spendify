@@ -45,11 +45,12 @@ object MoneyFormatter {
         val sign = if (amountMinor < 0) "-" else ""
         val rupees = abs / 100
         val paise = (abs % 100).toString().padStart(2, '0')
-        val grouped = indianGroup(rupees.toString())
+        val grouped = groupIndian(rupees.toString())
         return "$sign$symbol$grouped.$paise"
     }
 
-    private fun indianGroup(digits: String): String {
+    /** Groups the integer part of a raw digit string (e.g. "123456" → "1,23,456"). */
+    fun groupIndian(digits: String): String {
         if (digits.length <= 3) return digits
         val last = digits.takeLast(3)
         var rest = digits.dropLast(3)

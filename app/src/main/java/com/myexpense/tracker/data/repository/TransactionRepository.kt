@@ -55,6 +55,9 @@ class TransactionRepository @Inject constructor(
 
     suspend fun getById(id: Long): Transaction? = dao.getById(id)?.toModel()
 
+    /** Titles from transaction history (for smart suggestions). */
+    fun observeRecentTitles(): Flow<List<String>> = dao.recentTitles()
+
     fun observeIncomeForMonth(month: YearMonth): Flow<Long> =
         dao.observeIncomeBetween(month.startMillis(), month.endMillis()).map { it.toMinorUnits() }
 
