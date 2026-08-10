@@ -1,10 +1,21 @@
 package com.myexpense.tracker.data.repository
 
+import com.myexpense.tracker.data.database.dao.MonthTotalRow
 import com.myexpense.tracker.data.database.dao.TransactionDao
 import com.myexpense.tracker.data.database.entity.TransactionEntity
+import com.myexpense.tracker.data.model.CategoryStat
+import com.myexpense.tracker.data.model.MonthlyPoint
 import com.myexpense.tracker.data.model.Transaction
 import com.myexpense.tracker.data.model.TransactionType
+import com.myexpense.tracker.utils.endMillis
+import com.myexpense.tracker.utils.startMillis
+import com.myexpense.tracker.utils.toEpochMillis
+import com.myexpense.tracker.utils.toLocalDate
+import com.myexpense.tracker.utils.toMinorUnits
+import com.myexpense.tracker.utils.toRupees
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.YearMonth
@@ -22,6 +33,9 @@ class TransactionRepository @Inject constructor(
     fun observeRecent(limit: Int): Flow<List<Transaction>> =
         dao.observeRecent(limit).map { list -> list.map { it.toModel() } }
 
+    fun observeBetween(from: LocalDate, to: LocalDate): Flow<List<Transaction>> =
+        dao.observeBetween(from.toEpochMillis(), to.toEpochMillis()).map { list -> list.map { it.toModel() } }
+
     fun observeFiltered(
         month: YearMonth?,
         type: TransactionType?,
@@ -30,29 +44,48 @@ class TransactionRepository @Inject constructor(
         query: String,
     ): Flow<List<Transaction>> =
         dao.observeFiltered(
-            month = month?.toString(),
+            from = month?.startMillis(),
+            to = month?.endMillis(),
             type = type,
             categoryId = categoryId,
             accountId = accountId,
             query = query.trim(),
         ).map { list -> list.map { it.toModel() } }
 
-    suspend fun getById(id: Long): Transaction? =
-        dao.getById(id)?.toModel()
+    suspend fun getById(id: Long): Transaction? = dao.getById(id)?.toModel()
 
     fun observeIncomeForMonth(month: YearMonth): Flow<Long> =
-        dao.observeIncomeForMonth(month.toString())
+        dao.observeIncomeBetween(month.startMillis(), month.endMillis()).map { it.toMinorUnits() }
 
     fun observeExpenseForMonth(month: YearMonth): Flow<Long> =
-        dao.observeExpenseForMonth(month.toString())
+        dao.observeExpenseBetween(month.startMillis(), month.endMillis()).map { it.toMinorUnits() }
 
-    fun observeTotals(): Flow<Pair<Long, Long>> {
-        // income, expense (all time)
-        return kotlinx.coroutines.flow.combine(
-            dao.observeTotalIncome(),
-            dao.observeTotalExpense(),
-        ) { income, expense -> income to expense }
+    /** All-time income and expense (minor units). */
+    fun observeTotals(): Flow<Pair<Long, Long>> =
+        combine(dao.observeTotalIncome(), dao.observeTotalExpense()) { income, expense ->
+            income.toMinorUnits() to expense.toMinorUnits()
+        }
+
+    /** Per-category expense stats for a month ("yyyy-MM"). */
+    fun observeCategoryStats(monthKey: String, type: TransactionType): Flow<List<CategoryStat>> {
+        val month = runCatching { YearMonth.parse(monthKey) }.getOrNull()
+            ?: return flowOf(emptyList())
+        return dao.observeCategoryTotals(month.startMillis(), month.endMillis(), type).map { rows ->
+            rows.map { row ->
+                CategoryStat(
+                    categoryId = row.categoryId,
+                    total = row.total.toMinorUnits(),
+                    count = row.count,
+                )
+            }
+        }
     }
+
+    /** Monthly income/expense series between two dates (inclusive). */
+    fun observeMonthlySeries(from: LocalDate, to: LocalDate): Flow<List<MonthlyPoint>> =
+        dao.observeMonthlyTotals(from.toEpochMillis(), to.toEpochMillis()).map { rows ->
+            buildSeries(YearMonth.from(from), YearMonth.from(to), rows)
+        }
 
     suspend fun save(transaction: Transaction): Long {
         val entity = transaction.toEntity()
@@ -69,25 +102,67 @@ class TransactionRepository @Inject constructor(
 
     suspend fun deleteAll() = dao.deleteAll()
 
+    private fun buildSeries(
+        from: YearMonth,
+        to: YearMonth,
+        rows: List<MonthTotalRow>,
+    ): List<MonthlyPoint> {
+        val grouped = rows.groupBy { it.month }
+        val points = mutableListOf<MonthlyPoint>()
+        var cursor = from
+        while (!cursor.isAfter(to)) {
+            val key = cursor.toString()
+            points += MonthlyPoint(
+                month = cursor,
+                income = grouped[key]?.firstOrNull { it.type == TransactionType.INCOME }?.total?.toMinorUnits() ?: 0L,
+                expense = grouped[key]?.firstOrNull { it.type == TransactionType.EXPENSE }?.total?.toMinorUnits() ?: 0L,
+            )
+            cursor = cursor.plusMonths(1)
+        }
+        return points
+    }
+
     private fun TransactionEntity.toModel() = Transaction(
         id = id,
+        title = title,
+        amount = amount.toMinorUnits(),
         type = type,
-        amount = amount,
         categoryId = categoryId,
         accountId = accountId,
-        note = note,
-        date = date,
+        toAccountId = toAccountId,
+        note = note ?: "",
+        date = date.toLocalDate(),
+        time = time,
+        tags = tags,
+        personId = personId,
+        latitude = latitude,
+        longitude = longitude,
+        locationName = locationName,
+        receiptImagePath = receiptImagePath,
+        isRecurring = isRecurring,
+        recurringId = recurringId,
         createdAt = createdAt,
     )
 
     private fun Transaction.toEntity() = TransactionEntity(
         id = id,
+        title = title,
+        amount = amount.toRupees(),
         type = type,
-        amount = amount,
-        categoryId = categoryId,
-        accountId = accountId,
-        note = note,
-        date = date,
+        categoryId = requireNotNull(categoryId) { "Transaction requires a category" },
+        accountId = requireNotNull(accountId) { "Transaction requires an account" },
+        toAccountId = toAccountId,
+        note = note.ifBlank { null },
+        date = date.toEpochMillis(),
+        time = time,
+        tags = tags,
+        personId = personId,
+        latitude = latitude,
+        longitude = longitude,
+        locationName = locationName,
+        receiptImagePath = receiptImagePath,
+        isRecurring = isRecurring,
+        recurringId = recurringId,
         createdAt = createdAt,
     )
 }

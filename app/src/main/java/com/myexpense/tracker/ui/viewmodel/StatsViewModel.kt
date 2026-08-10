@@ -2,7 +2,6 @@ package com.myexpense.tracker.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.myexpense.tracker.data.database.dao.CategorySumRow
 import com.myexpense.tracker.data.model.Category
 import com.myexpense.tracker.data.model.CategoryStat
 import com.myexpense.tracker.data.model.MonthlyPoint
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.YearMonth
 import javax.inject.Inject
@@ -44,17 +42,11 @@ class StatsViewModel @Inject constructor(
     private val month = MutableStateFlow(currentMonth())
 
     private val categoryStats = month.flatMapLatest { m ->
-        transactionRepository.observeCategoryStats(m.toString(), TransactionType.EXPENSE).map { rows ->
-            rows.map { row -> row.toStat() }
-        }
+        transactionRepository.observeCategoryStats(m.toString(), TransactionType.EXPENSE)
     }
 
     private val trend = month.flatMapLatest { m ->
-        val from = m.minusMonths(11).atDay(1)
-        val to = m.atEndOfMonth()
-        transactionRepository.observeMonthlySeries(from, to).map { rows ->
-            buildTrend(m, rows)
-        }
+        transactionRepository.observeMonthlySeries(m.minusMonths(11).atDay(1), m.atEndOfMonth())
     }
 
     private val income = month.flatMapLatest { transactionRepository.observeIncomeForMonth(it) }
@@ -70,9 +62,12 @@ class StatsViewModel @Inject constructor(
 
     private val money = combine(month, income, expense) { m, inc, exp -> Money(inc, exp, m) }
 
-    private val details = combine(categoryStats, trend, categoryRepository.observeAll(), settingsRepository.settings) { s, t, c, settings ->
-        Details(s, t, c, settings.currencySymbol)
-    }
+    private val details = combine(
+        categoryStats,
+        trend,
+        categoryRepository.observeAll(),
+        settingsRepository.settings,
+    ) { s, t, c, settings -> Details(s, t, c, settings.currencySymbol) }
 
     val uiState: StateFlow<StatsUiState> = combine(money, details) { m, d ->
         val categoryMap = d.categories.associateBy { it.id }
@@ -96,21 +91,4 @@ class StatsViewModel @Inject constructor(
     fun setMonth(newMonth: YearMonth) { month.value = newMonth }
     fun previousMonth() { month.value = month.value.minusMonths(1) }
     fun nextMonth() { month.value = month.value.plusMonths(1) }
-
-    private fun CategorySumRow.toStat(): CategoryStat = CategoryStat(
-        categoryId = categoryId,
-        total = total,
-        count = count,
-    )
-
-    private fun buildTrend(selected: YearMonth, rows: List<com.myexpense.tracker.data.database.dao.MonthSumRow>): List<MonthlyPoint> {
-        val byMonth = rows.groupBy { it.month }
-        return (0L..11L).map { offset ->
-            val m = selected.minusMonths(offset)
-            val key = m.toString()
-            val income = byMonth[key]?.filter { it.type == TransactionType.INCOME }?.sumOf { it.total } ?: 0L
-            val expense = byMonth[key]?.filter { it.type == TransactionType.EXPENSE }?.sumOf { it.total } ?: 0L
-            MonthlyPoint(month = m, income = income, expense = expense)
-        }.reversed()
-    }
 }

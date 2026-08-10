@@ -26,16 +26,16 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE id = :id")
     suspend fun getById(id: Long): CategoryEntity?
 
-    @Query("SELECT * FROM categories ORDER BY sortOrder ASC, name ASC")
+    @Query("SELECT * FROM categories ORDER BY name ASC")
     fun observeAll(): Flow<List<CategoryEntity>>
 
-    @Query("SELECT * FROM categories WHERE type = :type ORDER BY sortOrder ASC, name ASC")
+    @Query("SELECT * FROM categories WHERE type = :type ORDER BY name ASC")
     fun observeByType(type: TransactionType): Flow<List<CategoryEntity>>
 
-    @Query("SELECT * FROM categories ORDER BY sortOrder ASC, name ASC")
+    @Query("SELECT * FROM categories ORDER BY name ASC")
     suspend fun getAll(): List<CategoryEntity>
 
-    @Query("SELECT * FROM categories WHERE type = :type ORDER BY sortOrder ASC, name ASC")
+    @Query("SELECT * FROM categories WHERE type = :type ORDER BY name ASC")
     suspend fun getByType(type: TransactionType): List<CategoryEntity>
 
     @Query("DELETE FROM categories")

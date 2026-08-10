@@ -28,14 +28,11 @@ interface AccountDao {
     @Query("SELECT * FROM accounts WHERE id = :id")
     fun observeById(id: Long): Flow<AccountEntity?>
 
-    @Query("SELECT * FROM accounts WHERE isArchived = 0 ORDER BY name ASC")
-    fun observeActive(): Flow<List<AccountEntity>>
-
-    @Query("SELECT * FROM accounts ORDER BY isArchived ASC, name ASC")
+    @Query("SELECT * FROM accounts ORDER BY isDefault DESC, name ASC")
     fun observeAll(): Flow<List<AccountEntity>>
 
-    @Query("SELECT * FROM accounts WHERE isArchived = 0 ORDER BY name ASC")
-    suspend fun getActive(): List<AccountEntity>
+    @Query("SELECT * FROM accounts ORDER BY isDefault DESC, name ASC")
+    suspend fun getAll(): List<AccountEntity>
 
     @Query("DELETE FROM accounts")
     suspend fun deleteAll()

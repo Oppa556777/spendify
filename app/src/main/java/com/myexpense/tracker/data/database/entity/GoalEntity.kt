@@ -4,31 +4,29 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.myexpense.tracker.data.model.TransactionType
 
-/**
- * Categories support nesting via [parentId] (self-referencing foreign key).
- * `type` is stored as the enum name ("INCOME" / "EXPENSE").
- */
 @Entity(
-    tableName = "categories",
+    tableName = "goals",
     foreignKeys = [
         ForeignKey(
-            entity = CategoryEntity::class,
+            entity = AccountEntity::class,
             parentColumns = ["id"],
-            childColumns = ["parentId"],
+            childColumns = ["accountId"],
             onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index("type"), Index("parentId")]
+    indices = [Index("accountId"), Index("isCompleted")]
 )
-data class CategoryEntity(
+data class GoalEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val type: TransactionType,
+    val targetAmount: Double,
+    val savedAmount: Double = 0.0,
+    val deadline: Long? = null,
     val iconName: String,
     val colorHex: String,
-    val parentId: Long? = null,
-    val isDefault: Boolean = false,
+    val accountId: Long? = null,
+    val note: String? = null,
+    val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
 )

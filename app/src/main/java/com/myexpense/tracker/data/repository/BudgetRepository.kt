@@ -4,8 +4,16 @@ import com.myexpense.tracker.data.database.dao.BudgetDao
 import com.myexpense.tracker.data.database.dao.CategoryDao
 import com.myexpense.tracker.data.database.dao.TransactionDao
 import com.myexpense.tracker.data.database.entity.BudgetEntity
+import com.myexpense.tracker.data.database.entity.CategoryEntity
 import com.myexpense.tracker.data.model.Budget
 import com.myexpense.tracker.data.model.BudgetWithSpent
+import com.myexpense.tracker.data.model.TransactionType
+import com.myexpense.tracker.utils.endMillis
+import com.myexpense.tracker.utils.startMillis
+import com.myexpense.tracker.utils.toColorLong
+import com.myexpense.tracker.utils.toHexColor
+import com.myexpense.tracker.utils.toMinorUnits
+import com.myexpense.tracker.utils.toRupees
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -20,25 +28,32 @@ class BudgetRepository @Inject constructor(
     private val transactionDao: TransactionDao,
 ) {
 
-    fun observeForMonth(month: YearMonth): Flow<List<Budget>> =
-        dao.observeForMonth(month).map { list -> list.map { it.toModel() } }
+    fun observeAll(): Flow<List<Budget>> =
+        dao.observeAll().map { list -> list.map { it.toModel() } }
 
-    /** Budgets with category info and how much was spent in [month]. */
+    /** Active budgets with category info and the amount spent in [month]. */
     fun observeForMonthWithSpent(month: YearMonth): Flow<List<BudgetWithSpent>> =
         combine(
-            dao.observeForMonth(month),
+            dao.observeActive(),
+            transactionDao.observeCategoryTotals(
+                month.startMillis(),
+                month.endMillis(),
+                TransactionType.EXPENSE,
+            ),
             categoryDao.observeAll(),
-            transactionDao.observeCategoryStats(month.toString(), com.myexpense.tracker.data.model.TransactionType.EXPENSE),
-        ) { budgets, categories, stats ->
+        ) { budgets, totals, categories ->
             val categoryMap = categories.associateBy { it.id }
-            val spentMap = stats.associate { it.categoryId to it.total }
+            val spentByCategory = totals.associate { it.categoryId to it.total.toMinorUnits() }
             budgets.map { budget ->
-                val category = budget.categoryId?.let(categoryMap::get)?.toModel()
+                val spent = if (budget.categoryId == null) {
+                    spentByCategory.values.sum()
+                } else {
+                    spentByCategory[budget.categoryId] ?: 0L
+                }
                 BudgetWithSpent(
                     budget = budget.toModel(),
-                    category = category,
-                    spent = spentMap[budget.categoryId] ?: 0L,
-                    income = 0L,
+                    category = budget.categoryId?.let { categoryMap[it] }?.toModel(),
+                    spent = spent,
                 )
             }
         }
@@ -64,28 +79,42 @@ class BudgetRepository @Inject constructor(
 
     private fun BudgetEntity.toModel() = Budget(
         id = id,
+        name = name,
         categoryId = categoryId,
-        amount = amount,
-        month = month,
-        isRecurring = isRecurring,
+        limitAmount = limitAmount.toMinorUnits(),
+        spentAmount = spentAmount.toMinorUnits(),
+        period = period,
+        startDate = startDate,
+        endDate = endDate,
+        colorHex = colorHex,
+        alertAt = alertAt,
+        isActive = isActive,
+        createdAt = createdAt,
     )
 
     private fun Budget.toEntity() = BudgetEntity(
         id = id,
+        name = name,
         categoryId = categoryId,
-        amount = amount,
-        month = month,
-        isRecurring = isRecurring,
+        limitAmount = limitAmount.toRupees(),
+        spentAmount = spentAmount.toRupees(),
+        period = period,
+        startDate = startDate,
+        endDate = endDate,
+        colorHex = colorHex,
+        alertAt = alertAt,
+        isActive = isActive,
+        createdAt = createdAt,
     )
 
-    private fun com.myexpense.tracker.data.database.entity.CategoryEntity.toModel() =
-        com.myexpense.tracker.data.model.Category(
-            id = id,
-            name = name,
-            type = type,
-            icon = icon,
-            color = color,
-            isDefault = isDefault,
-            sortOrder = sortOrder,
-        )
+    private fun CategoryEntity.toModel() = Category(
+        id = id,
+        name = name,
+        type = type,
+        icon = iconName,
+        color = colorHex.toColorLong(),
+        parentId = parentId,
+        isDefault = isDefault,
+        createdAt = createdAt,
+    )
 }

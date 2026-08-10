@@ -1,12 +1,16 @@
 package com.myexpense.tracker.data.repository
 
 import com.myexpense.tracker.data.database.dao.AccountDao
+import com.myexpense.tracker.data.database.dao.RecurringRuleDao
 import com.myexpense.tracker.data.database.dao.TransactionDao
 import com.myexpense.tracker.data.database.entity.AccountEntity
 import com.myexpense.tracker.data.model.Account
 import com.myexpense.tracker.data.model.AccountWithBalance
+import com.myexpense.tracker.utils.toColorLong
+import com.myexpense.tracker.utils.toHexColor
+import com.myexpense.tracker.utils.toMinorUnits
+import com.myexpense.tracker.utils.toRupees
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,32 +19,27 @@ import javax.inject.Singleton
 class AccountRepository @Inject constructor(
     private val dao: AccountDao,
     private val transactionDao: TransactionDao,
+    private val recurringRuleDao: RecurringRuleDao,
 ) {
-
-    fun observeActive(): Flow<List<Account>> =
-        dao.observeActive().map { list -> list.map { it.toModel() } }
 
     fun observeAll(): Flow<List<Account>> =
         dao.observeAll().map { list -> list.map { it.toModel() } }
 
-    /** Accounts joined with their live balance (initial balance + all transactions). */
+    /** Every account is active in this schema (no archived concept). */
+    fun observeActive(): Flow<List<Account>> = observeAll()
+
+    /** Accounts joined with their stored balance. */
     fun observeActiveWithBalance(): Flow<List<AccountWithBalance>> =
-        combine(dao.observeActive(), transactionDao.observeBalanceByAccount()) { accounts, deltas ->
-            val deltaMap = deltas.associate { it.accountId to it.total }
-            accounts.map { account ->
-                AccountWithBalance(
-                    account = account.toModel(),
-                    balance = account.initialBalance + (deltaMap[account.id] ?: 0L),
-                )
-            }
+        dao.observeAll().map { list ->
+            list.map { entity -> AccountWithBalance(account = entity.toModel(), balance = entity.balance.toMinorUnits()) }
         }
 
     fun observeTotalBalance(): Flow<Long> =
         observeActiveWithBalance().map { list -> list.sumOf { it.balance } }
 
-    suspend fun getActive(): List<Account> = dao.getActive().map { it.toModel() }
+    suspend fun getActive(): List<Account> = dao.getAll().map { it.toModel() }
 
-    suspend fun getAll(): List<Account> = dao.observeAll().first().map { it.toModel() }
+    suspend fun getAll(): List<Account> = dao.getAll().map { it.toModel() }
 
     suspend fun getById(id: Long): Account? = dao.getById(id)?.toModel()
 
@@ -52,7 +51,17 @@ class AccountRepository @Inject constructor(
         }
     }
 
-    suspend fun delete(id: Long) = dao.deleteById(id)
+    /**
+     * Safe delete: transactions and recurring rules are reassigned to another
+     * account. Returns false when no other account exists (nothing deleted).
+     */
+    suspend fun delete(id: Long): Boolean {
+        val fallback = dao.getAll().firstOrNull { it.id != id } ?: return false
+        transactionDao.reassignAccount(id, fallback.id)
+        recurringRuleDao.reassignAccount(id, fallback.id)
+        dao.deleteById(id)
+        return true
+    }
 
     suspend fun insertAll(accounts: List<Account>) =
         dao.insertAll(accounts.map { it.toEntity() })
@@ -62,20 +71,24 @@ class AccountRepository @Inject constructor(
     private fun AccountEntity.toModel() = Account(
         id = id,
         name = name,
-        type = type,
-        initialBalance = initialBalance,
-        color = color,
-        icon = icon,
-        isArchived = isArchived,
+        type = accountType,
+        balance = balance.toMinorUnits(),
+        currency = currency,
+        color = colorHex.toColorLong(),
+        icon = iconName,
+        isDefault = isDefault,
+        createdAt = createdAt,
     )
 
     private fun Account.toEntity() = AccountEntity(
         id = id,
         name = name,
-        type = type,
-        initialBalance = initialBalance,
-        color = color,
-        icon = icon,
-        isArchived = isArchived,
+        accountType = type,
+        balance = balance.toRupees(),
+        currency = currency,
+        colorHex = color.toHexColor(),
+        iconName = icon,
+        isDefault = isDefault,
+        createdAt = createdAt,
     )
 }

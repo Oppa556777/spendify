@@ -2,17 +2,11 @@ package com.myexpense.tracker.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.myexpense.tracker.data.model.AccountType
 
-@Entity(tableName = "accounts")
-data class AccountEntity(
+@Entity(tableName = "tags")
+data class TagEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val accountType: AccountType,
-    val balance: Double,
-    val currency: String = "INR",
     val colorHex: String,
-    val iconName: String,
-    val isDefault: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
 )

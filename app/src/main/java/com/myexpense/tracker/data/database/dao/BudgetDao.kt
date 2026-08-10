@@ -6,7 +6,16 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.myexpense.tracker.data.database.entity.BudgetEntity
 import kotlinx.coroutines.flow.Flow
-import java.time.YearMonth
+
+/** Budget + live spent/remaining/progress for a period, computed in SQL. */
+data class BudgetStatusRow(
+    val id: Long,
+    val name: String,
+    val limitAmount: Double,
+    val spent: Double,
+    val remaining: Double,
+    val progressPercent: Double,
+)
 
 @Dao
 interface BudgetDao {
@@ -23,18 +32,58 @@ interface BudgetDao {
     @Query("DELETE FROM budgets WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("SELECT * FROM budgets")
-    fun observeAll(): Flow<List<BudgetEntity>>
-
-    @Query("SELECT * FROM budgets WHERE isRecurring = 1 OR month = :month ORDER BY amount DESC")
-    fun observeForMonth(month: YearMonth): Flow<List<BudgetEntity>>
-
     @Query("SELECT * FROM budgets WHERE id = :id")
     suspend fun getById(id: Long): BudgetEntity?
 
-    @Query("SELECT * FROM budgets")
+    @Query("SELECT * FROM budgets ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<BudgetEntity>>
+
+    @Query("SELECT * FROM budgets WHERE isActive = 1 ORDER BY createdAt DESC")
+    fun observeActive(): Flow<List<BudgetEntity>>
+
+    @Query("SELECT * FROM budgets WHERE isActive = 1")
+    suspend fun getActive(): List<BudgetEntity>
+
+    @Query("SELECT * FROM budgets ORDER BY createdAt DESC")
     suspend fun getAll(): List<BudgetEntity>
 
     @Query("DELETE FROM budgets")
     suspend fun deleteAll()
+
+    /** Spent for one budget between dates (categoryId null = all categories). */
+    @Query(
+        "SELECT COALESCE(SUM(amount), 0) FROM transactions " +
+            "WHERE type = 'EXPENSE' AND (:categoryId IS NULL OR categoryId = :categoryId) " +
+            "AND date BETWEEN :from AND :to"
+    )
+    fun observeSpent(categoryId: Long?, from: Long, to: Long): Flow<Double>
+
+    /** Budget remaining calculations for all active budgets over a period. */
+    @Query(
+        """
+        SELECT b.id AS id,
+               b.name AS name,
+               b.limitAmount AS limitAmount,
+               COALESCE((
+                   SELECT SUM(t.amount) FROM transactions t
+                   WHERE t.type = 'EXPENSE' AND t.date BETWEEN :from AND :to
+                     AND (b.categoryId IS NULL OR t.categoryId = b.categoryId)
+               ), 0) AS spent,
+               b.limitAmount - COALESCE((
+                   SELECT SUM(t.amount) FROM transactions t
+                   WHERE t.type = 'EXPENSE' AND t.date BETWEEN :from AND :to
+                     AND (b.categoryId IS NULL OR t.categoryId = b.categoryId)
+               ), 0) AS remaining,
+               CASE WHEN b.limitAmount > 0 THEN
+                   COALESCE((
+                       SELECT SUM(t.amount) FROM transactions t
+                       WHERE t.type = 'EXPENSE' AND t.date BETWEEN :from AND :to
+                         AND (b.categoryId IS NULL OR t.categoryId = b.categoryId)
+                   ), 0) * 100.0 / b.limitAmount
+               ELSE 0 END AS progressPercent
+        FROM budgets b
+        WHERE b.isActive = 1
+        """
+    )
+    fun observeBudgetStatus(from: Long, to: Long): Flow<List<BudgetStatusRow>>
 }

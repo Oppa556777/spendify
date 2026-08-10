@@ -73,3 +73,35 @@ appclassic/                  framework-only implementation + offline build
 apk/                         the built, signed APK (MoneyMate-v1.0.0.apk)
 ci/                          CI workflow (copy to .github/workflows/ to use)
 ```
+
+## Database schema (Room, 15 tables)
+
+| Table | Purpose |
+|---|---|
+| `accounts` | bank/cash/card/wallet accounts with stored `balance` (Double), `currency`, `colorHex`, `iconName`, `isDefault` |
+| `categories` | income/expense categories with `iconName`, `colorHex`, nested via self-referencing `parentId` |
+| `transactions` | central ledger: `title`, `amount` (Double), `type` (INCOME/EXPENSE/TRANSFER), `categoryId`/`accountId` (NOT NULL FKs), `toAccountId`, `note`, `date` (epoch millis), `time` (HH:mm), `tags`, `personId`, location fields, `receiptImagePath`, `isRecurring`/`recurringId` |
+| `budgets` | per-category (or all-category) limits with `limitAmount`, `spentAmount`, `period` (WEEKLY/MONTHLY/YEARLY/CUSTOM), `alertAt` %, `isActive` |
+| `goals` | savings goals: `targetAmount`, `savedAmount`, `deadline`, progress computed in SQL |
+| `loans` | LENT/BORROWED loans with `amount`, `paidAmount`, `dueDate`, `isSettled` |
+| `subscriptions` | recurring subscriptions with `billingCycle`, `nextDueDate`, `reminderDays` |
+| `tags` | named tags with colours |
+| `people` | contacts for loans/splits (`name`, `phone`, `avatarColor`) |
+| `recurring_rules` | templates that generate recurring transactions (`frequency`, `interval`) |
+| `bill_splits` / `bill_split_members` | shared bills + per-person shares (`shareAmount`, `isPaid`) |
+| `assets` | portfolio: STOCK/MUTUAL_FUND/CRYPTO/REAL_ESTATE/GOLD/FD/OTHER with `quantity`, `buyPrice`, `currentPrice` |
+| `achievements` | gamification (seeded with 8 samples on first launch) |
+| `app_settings` | key-value store |
+
+Amounts are stored as `Double` rupees in the DB; the domain layer maps them to
+`Long` minor units to avoid floating-point drift. Dates are epoch-millisecond
+timestamps (UTC midnight); the repository layer converts to/from `LocalDate`.
+Enums are stored as their names via Room's built-in converters.
+
+DAOs expose full CRUD plus complex queries: monthly income/expense totals
+(`strftime('%Y-%m', date/1000, 'unixepoch')`), per-category totals, date-range
+filters, title/note/category search, period income-vs-expense, budget
+remaining & progress (computed in SQL), goal progress percentages, loan
+outstanding balances, subscription due windows, asset portfolio value, and
+bill-split paid/total shares. Deleting a category/account safely reassigns
+referencing transactions/subscriptions/recurring rules to a fallback first.

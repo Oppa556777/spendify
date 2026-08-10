@@ -3,6 +3,8 @@ package com.myexpense.tracker.ui.screens.accounts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +90,23 @@ fun AccountsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            state.error?.let { error ->
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                }
+            }
+
             item {
                 HeroBalanceCard(
                     title = "Total balance",
@@ -135,7 +155,7 @@ fun AccountsScreen(
                                 text = MoneyFormatter.formatWithSymbol(accountWithBalance.balance, state.currencySymbol),
                                 style = androidx.compose.ui.text.TextStyle(
                                     fontFamily = AmountFontFamily,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp,
                                 ),
                             )
@@ -165,6 +185,7 @@ fun AccountsScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AccountDialog(
     account: Account?,
@@ -173,7 +194,7 @@ private fun AccountDialog(
 ) {
     var name by remember { mutableStateOf(account?.name ?: "") }
     var type by remember { mutableStateOf(account?.type ?: AccountType.CASH) }
-    var initialBalance by remember { mutableStateOf(if (account != null) MoneyFormatter.format(account.initialBalance) else "") }
+    var balance by remember { mutableStateOf(if (account != null) MoneyFormatter.format(account.balance) else "") }
     var color by remember { mutableStateOf(account?.color ?: Palette.colors.first()) }
     var icon by remember { mutableStateOf(account?.icon ?: "account_balance_wallet") }
 
@@ -190,26 +211,26 @@ private fun AccountDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
-                    value = initialBalance,
-                    onValueChange = { initialBalance = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Opening balance") },
+                    value = balance,
+                    onValueChange = { balance = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("Balance") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                Text("Type", style = MaterialTheme.typography.labelMedium)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     AccountType.entries.forEach { t ->
                         FilterChip(
                             selected = type == t,
                             onClick = { type = t },
-                            label = {
-                                Text(t.name.lowercase().replaceFirstChar { it.uppercase() })
-                            },
+                            label = { Text(t.name.lowercase().replaceFirstChar { it.uppercase() }) },
                         )
                     }
                 }
+                Text("Colour", style = MaterialTheme.typography.labelMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Palette.colors.take(8).forEach { c ->
                         Surface(
@@ -235,15 +256,18 @@ private fun AccountDialog(
         confirmButton = {
             TextButton(onClick = {
                 if (name.isNotBlank()) {
-                    val amount = initialBalance.toDoubleOrNull() ?: 0.0
+                    val amount = balance.toDoubleOrNull() ?: 0.0
                     onSave(
                         Account(
                             id = account?.id ?: 0,
                             name = name.trim(),
                             type = type,
-                            initialBalance = (amount * 100).toLong(),
+                            balance = (amount * 100).toLong(),
+                            currency = account?.currency ?: "INR",
                             color = color,
                             icon = icon,
+                            isDefault = account?.isDefault ?: false,
+                            createdAt = account?.createdAt ?: System.currentTimeMillis(),
                         )
                     )
                 }

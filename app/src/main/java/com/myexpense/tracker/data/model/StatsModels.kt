@@ -1,5 +1,7 @@
 package com.myexpense.tracker.data.model
 
+import java.time.YearMonth
+
 /** Aggregated spending per category for a period. */
 data class CategoryStat(
     val categoryId: Long?,

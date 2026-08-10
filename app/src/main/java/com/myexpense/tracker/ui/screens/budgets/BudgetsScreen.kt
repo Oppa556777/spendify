@@ -3,6 +3,8 @@ package com.myexpense.tracker.ui.screens.budgets
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.myexpense.tracker.data.model.Budget
+import com.myexpense.tracker.data.model.BudgetPeriod
 import com.myexpense.tracker.data.model.BudgetWithSpent
 import com.myexpense.tracker.ui.components.CategoryIcon
 import com.myexpense.tracker.ui.components.EmptyState
@@ -66,7 +69,11 @@ fun BudgetsScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Budgets") },
-                navigationIcon = { androidx.compose.material3.IconButton(onClick = onBack) { androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
@@ -91,7 +98,7 @@ fun BudgetsScreen(
                 onNext = viewModel::nextMonth,
             )
 
-            val totalBudget = state.budgets.sumOf { it.budget.amount }
+            val totalBudget = state.budgets.sumOf { it.budget.limitAmount }
             val totalSpent = state.budgets.sumOf { it.spent }
             Row(
                 modifier = Modifier
@@ -114,7 +121,7 @@ fun BudgetsScreen(
             if (state.budgets.isEmpty()) {
                 EmptyState(
                     title = "No budgets for ${state.month.toString()}",
-                    subtitle = "Create a monthly budget per category to stay on track.",
+                    subtitle = "Create a budget per category to stay on track.",
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {
@@ -184,13 +191,13 @@ private fun BudgetCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = category?.name ?: "Unknown category",
+                        text = category?.name ?: "All categories",
                         style = MaterialTheme.typography.titleSmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = if (budget.isRecurring) "Monthly" else "One-time",
+                        text = budget.period.name.lowercase().replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -204,7 +211,7 @@ private fun BudgetCard(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "${MoneyFormatter.format(budgetWithSpent.spent)} / ${MoneyFormatter.format(budget.amount)} $symbol" +
+                    text = "${MoneyFormatter.format(budgetWithSpent.spent)} / ${MoneyFormatter.format(budget.limitAmount)} $symbol" +
                         if (overspent) "  •  Overspent by ${MoneyFormatter.format(-budgetWithSpent.remaining)}" else "",
                     style = MaterialTheme.typography.labelSmall,
                     color = if (overspent) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -221,6 +228,7 @@ private fun BudgetCard(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BudgetDialog(
     existing: Budget?,
@@ -229,8 +237,11 @@ private fun BudgetDialog(
     onDismiss: () -> Unit,
     onSave: (Budget) -> Unit,
 ) {
-    var categoryId by remember { mutableStateOf(existing?.categoryId ?: categories.firstOrNull()?.id ?: 0L) }
-    var amount by remember { mutableStateOf(existing?.let { MoneyFormatter.format(it.amount) } ?: "") }
+    var categoryId by remember {
+        mutableStateOf(existing?.categoryId ?: categories.firstOrNull()?.id ?: 0L)
+    }
+    var amount by remember { mutableStateOf(existing?.let { MoneyFormatter.format(it.limitAmount) } ?: "") }
+    var period by remember { mutableStateOf(existing?.period ?: BudgetPeriod.MONTHLY) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -239,11 +250,11 @@ private fun BudgetDialog(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (categories.isNotEmpty()) {
                     Text("Category", style = MaterialTheme.typography.labelMedium)
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        categories.take(6).forEach { category ->
+                        categories.forEach { category ->
                             val selected = categoryId == category.id
                             Surface(
                                 modifier = Modifier.clickable { categoryId = category.id },
@@ -268,11 +279,35 @@ private fun BudgetDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
-                    label = { Text("Monthly limit") },
+                    label = { Text("Limit amount") },
                     prefix = { Text(symbol) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Text("Period", style = MaterialTheme.typography.labelMedium)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    BudgetPeriod.entries.forEach { p ->
+                        val selected = period == p
+                        Surface(
+                            modifier = Modifier.clickable { period = p },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                        ) {
+                            Text(
+                                p.name.lowercase().replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -282,10 +317,17 @@ private fun BudgetDialog(
                     onSave(
                         Budget(
                             id = existing?.id ?: 0,
+                            name = existing?.name ?: "",
                             categoryId = categoryId,
-                            amount = (parsed * 100).toLong().coerceAtLeast(1),
-                            month = existing?.month,
-                            isRecurring = existing?.isRecurring ?: true,
+                            limitAmount = (parsed * 100).toLong().coerceAtLeast(1),
+                            spentAmount = existing?.spentAmount ?: 0,
+                            period = period,
+                            startDate = existing?.startDate ?: System.currentTimeMillis(),
+                            endDate = existing?.endDate,
+                            colorHex = existing?.colorHex ?: "#4CAF50",
+                            alertAt = existing?.alertAt ?: 80,
+                            isActive = existing?.isActive ?: true,
+                            createdAt = existing?.createdAt ?: System.currentTimeMillis(),
                         )
                     )
                 }

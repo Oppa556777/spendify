@@ -157,8 +157,9 @@ fun TransactionsScreen(
                         items(list, key = { it.id }) { t ->
                             val category = state.categories.firstOrNull { it.id == t.categoryId }
                             TransactionRow(
-                                title = t.note.ifBlank { category?.name ?: if (t.isExpense) "Expense" else "Income" },
-                                subtitle = category?.name ?: (state.accounts.firstOrNull { it.id == t.accountId }?.name ?: "Uncategorized"),
+                                title = t.title.ifBlank { category?.name ?: if (t.isExpense) "Expense" else "Income" },
+                                subtitle = category?.name
+                                    ?: (state.accounts.firstOrNull { it.id == t.accountId }?.name ?: "Uncategorized"),
                                 icon = category?.icon,
                                 iconColor = Color(category?.color ?: if (t.isExpense) 0xFFC62828 else 0xFF2E7D32),
                                 amount = t.amount,

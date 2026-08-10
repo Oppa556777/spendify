@@ -98,6 +98,17 @@ fun AddEditTransactionScreen(
         ) {
             TypeSelector(selected = state.type, onSelect = viewModel::setType)
 
+            // Title
+            OutlinedTextField(
+                value = state.title,
+                onValueChange = viewModel::setTitle,
+                label = { Text("Title") },
+                placeholder = { Text("e.g. Groceries at the market") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            )
+
             AmountField(
                 value = state.amountMinor,
                 onValueChange = viewModel::setAmount,

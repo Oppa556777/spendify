@@ -26,21 +26,35 @@ class CategoriesViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val selectedType = MutableStateFlow(TransactionType.EXPENSE)
+    private val error = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<CategoriesUiState> = combine(
-        selectedType,
-        selectedType.let { type -> combine(type, categoryRepository.observeAll()) { t, all -> all.filter { it.type == t } } },
-    ) { type, list ->
-        CategoriesUiState(selectedType = type, categories = list)
+    private val categories = combine(selectedType, categoryRepository.observeAll()) { type, all ->
+        all.filter { it.type == type }
+    }
+
+    val uiState: StateFlow<CategoriesUiState> = combine(selectedType, categories, error) { type, list, err ->
+        CategoriesUiState(selectedType = type, categories = list, error = err)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CategoriesUiState())
 
     fun setType(type: TransactionType) { selectedType.value = type }
 
     fun save(category: Category) {
-        viewModelScope.launch { categoryRepository.save(category) }
+        viewModelScope.launch {
+            categoryRepository.save(category)
+            error.value = null
+        }
     }
 
     fun delete(category: Category) {
-        viewModelScope.launch { categoryRepository.delete(category.id) }
+        viewModelScope.launch {
+            val ok = categoryRepository.delete(category.id)
+            error.value = if (ok) {
+                null
+            } else {
+                "Cannot delete the last ${category.type.name.lowercase()} category. Create another one first."
+            }
+        }
     }
+
+    fun clearError() { error.value = null }
 }

@@ -92,6 +92,23 @@ fun CategoriesScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
 
+            state.error?.let { error ->
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                ) {
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
+
             if (state.categories.isEmpty()) {
                 EmptyState(
                     title = "No ${state.selectedType.name.lowercase()} categories",
@@ -248,8 +265,9 @@ private fun CategoryDialog(
                             type = type,
                             icon = icon,
                             color = color,
+                            parentId = category?.parentId,
                             isDefault = category?.isDefault ?: false,
-                            sortOrder = category?.sortOrder ?: 0,
+                            createdAt = category?.createdAt ?: System.currentTimeMillis(),
                         )
                     )
                 }

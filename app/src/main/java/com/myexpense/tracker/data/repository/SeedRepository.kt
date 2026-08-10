@@ -1,5 +1,7 @@
 package com.myexpense.tracker.data.repository
 
+import com.myexpense.tracker.data.database.dao.AchievementDao
+import com.myexpense.tracker.data.database.entity.AchievementEntity
 import com.myexpense.tracker.data.model.Account
 import com.myexpense.tracker.data.model.AccountType
 import com.myexpense.tracker.data.model.Category
@@ -8,11 +10,17 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Seeds sensible defaults (categories + a cash account) on first launch. */
+/**
+ * Seeds sensible defaults on first launch:
+ * - the 16 default EXPENSE + 8 default INCOME categories
+ * - a default "Cash" account (transactions require an account)
+ * - the sample achievements (gamification)
+ */
 @Singleton
 class SeedRepository @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val accountRepository: AccountRepository,
+    private val achievementDao: AchievementDao,
     private val settingsRepository: SettingsRepository,
 ) {
 
@@ -21,46 +29,116 @@ class SeedRepository @Inject constructor(
         if (firstRunDone) return
 
         if (categoryRepository.getAll().isEmpty()) {
-            categoryRepository.insertAll(defaultExpenseCategories + defaultIncomeCategories)
+            categoryRepository.insertAll(defaultCategories())
         }
         if (accountRepository.getActive().isEmpty()) {
             accountRepository.save(
                 Account(
                     name = "Cash",
                     type = AccountType.CASH,
-                    initialBalance = 0,
+                    balance = 0,
+                    currency = "INR",
                     color = 0xFF4CAF50,
                     icon = "payments",
+                    isDefault = true,
                 )
             )
+        }
+        if (achievementDao.getAll().isEmpty()) {
+            achievementDao.insertAll(sampleAchievements())
         }
         settingsRepository.setFirstRunComplete()
     }
 
     companion object {
-        val defaultExpenseCategories: List<Category> = listOf(
-            Category(name = "Food & Dining", type = TransactionType.EXPENSE, icon = "restaurant", color = 0xFFEF5350, isDefault = true, sortOrder = 1),
-            Category(name = "Groceries", type = TransactionType.EXPENSE, icon = "shopping_cart", color = 0xFFFFA726, isDefault = true, sortOrder = 2),
-            Category(name = "Transport", type = TransactionType.EXPENSE, icon = "directions_bus", color = 0xFF42A5F5, isDefault = true, sortOrder = 3),
-            Category(name = "Fuel", type = TransactionType.EXPENSE, icon = "local_gas_station", color = 0xFF26A69A, isDefault = true, sortOrder = 4),
-            Category(name = "Shopping", type = TransactionType.EXPENSE, icon = "shopping_bag", color = 0xFFAB47BC, isDefault = true, sortOrder = 5),
-            Category(name = "Entertainment", type = TransactionType.EXPENSE, icon = "movie", color = 0xFFEC407A, isDefault = true, sortOrder = 6),
-            Category(name = "Health", type = TransactionType.EXPENSE, icon = "medical_services", color = 0xFFEF5350, isDefault = true, sortOrder = 7),
-            Category(name = "Housing", type = TransactionType.EXPENSE, icon = "home", color = 0xFF8D6E63, isDefault = true, sortOrder = 8),
-            Category(name = "Utilities", type = TransactionType.EXPENSE, icon = "bolt", color = 0xFFFFCA28, isDefault = true, sortOrder = 9),
-            Category(name = "Education", type = TransactionType.EXPENSE, icon = "school", color = 0xFF5C6BC0, isDefault = true, sortOrder = 10),
-            Category(name = "Travel", type = TransactionType.EXPENSE, icon = "flight", color = 0xFF29B6F6, isDefault = true, sortOrder = 11),
-            Category(name = "Bills & Fees", type = TransactionType.EXPENSE, icon = "receipt_long", color = 0xFF78909C, isDefault = true, sortOrder = 12),
-            Category(name = "Other", type = TransactionType.EXPENSE, icon = "category", color = 0xFF9E9E9E, isDefault = true, sortOrder = 99),
+
+        private fun category(name: String, type: TransactionType, icon: String, color: Long) =
+            Category(name = name, type = type, icon = icon, color = color, isDefault = true)
+
+        fun defaultCategories(): List<Category> = listOf(
+            // ── Expense (16) ────────────────────────────────────────────────
+            category("Food & Dining", TransactionType.EXPENSE, "restaurant", 0xFFEF5350),
+            category("Transport", TransactionType.EXPENSE, "directions_bus", 0xFF42A5F5),
+            category("Shopping", TransactionType.EXPENSE, "shopping_bag", 0xFFAB47BC),
+            category("Entertainment", TransactionType.EXPENSE, "movie", 0xFFEC407A),
+            category("Health", TransactionType.EXPENSE, "medical_services", 0xFF26A69A),
+            category("Education", TransactionType.EXPENSE, "school", 0xFF5C6BC0),
+            category("Bills & Utilities", TransactionType.EXPENSE, "bolt", 0xFFFFCA28),
+            category("Housing/Rent", TransactionType.EXPENSE, "home", 0xFF8D6E63),
+            category("Travel", TransactionType.EXPENSE, "flight", 0xFF29B6F6),
+            category("Personal Care", TransactionType.EXPENSE, "spa", 0xFFF06292),
+            category("Gifts", TransactionType.EXPENSE, "card_giftcard", 0xFFD81B60),
+            category("Pets", TransactionType.EXPENSE, "pets", 0xFFA1887F),
+            category("Insurance", TransactionType.EXPENSE, "workspace_premium", 0xFF78909C),
+            category("Investments", TransactionType.EXPENSE, "trending_up", 0xFF66BB6A),
+            category("Subscriptions", TransactionType.EXPENSE, "credit_card", 0xFF7E57C2),
+            category("Others", TransactionType.EXPENSE, "category", 0xFF9E9E9E),
+            // ── Income (8) ──────────────────────────────────────────────────
+            category("Salary", TransactionType.INCOME, "payments", 0xFF43A047),
+            category("Freelance", TransactionType.INCOME, "laptop", 0xFF26A69A),
+            category("Business", TransactionType.INCOME, "work", 0xFF3949AB),
+            category("Investment Returns", TransactionType.INCOME, "trending_up", 0xFF66BB6A),
+            category("Rental Income", TransactionType.INCOME, "home", 0xFF8D6E63),
+            category("Gift Received", TransactionType.INCOME, "redeem", 0xFFEC407A),
+            category("Bonus", TransactionType.INCOME, "emoji_events", 0xFFFFB300),
+            category("Others", TransactionType.INCOME, "add_circle", 0xFF9E9E9E),
         )
 
-        val defaultIncomeCategories: List<Category> = listOf(
-            Category(name = "Salary", type = TransactionType.INCOME, icon = "payments", color = 0xFF66BB6A, isDefault = true, sortOrder = 1),
-            Category(name = "Business", type = TransactionType.INCOME, icon = "work", color = 0xFF26A69A, isDefault = true, sortOrder = 2),
-            Category(name = "Freelance", type = TransactionType.INCOME, icon = "laptop", color = 0xFF42A5F5, isDefault = true, sortOrder = 3),
-            Category(name = "Investments", type = TransactionType.INCOME, icon = "trending_up", color = 0xFFAB47BC, isDefault = true, sortOrder = 4),
-            Category(name = "Gifts", type = TransactionType.INCOME, icon = "redeem", color = 0xFFEC407A, isDefault = true, sortOrder = 5),
-            Category(name = "Other Income", type = TransactionType.INCOME, icon = "add_circle", color = 0xFF9E9E9E, isDefault = true, sortOrder = 99),
-        )
+        /** Sample achievements, unlocked progressively as the user uses the app. */
+        fun sampleAchievements(): List<AchievementEntity> {
+            val now = System.currentTimeMillis()
+            return listOf(
+                AchievementEntity(
+                    title = "Welcome Aboard",
+                    description = "You installed MoneyMate – a fully offline expense tracker.",
+                    iconName = "workspace_premium",
+                    isUnlocked = true,
+                    unlockedAt = now,
+                    type = "ONBOARDING",
+                ),
+                AchievementEntity(
+                    title = "First Transaction",
+                    description = "Add your very first expense or income.",
+                    iconName = "payments",
+                    type = "TRANSACTION",
+                ),
+                AchievementEntity(
+                    title = "Budget Planner",
+                    description = "Create your first monthly budget.",
+                    iconName = "savings",
+                    type = "BUDGET",
+                ),
+                AchievementEntity(
+                    title = "Goal Setter",
+                    description = "Create your first savings goal.",
+                    iconName = "star",
+                    type = "GOAL",
+                ),
+                AchievementEntity(
+                    title = "Track Star",
+                    description = "Log 50 transactions.",
+                    iconName = "show_chart",
+                    type = "TRANSACTION",
+                ),
+                AchievementEntity(
+                    title = "Saver",
+                    description = "Put aside money towards a goal.",
+                    iconName = "savings",
+                    type = "GOAL",
+                ),
+                AchievementEntity(
+                    title = "Debt Free",
+                    description = "Settle your first loan.",
+                    iconName = "payments",
+                    type = "LOAN",
+                ),
+                AchievementEntity(
+                    title = "Early Bird",
+                    description = "Log a transaction before 8 AM.",
+                    iconName = "auto_awesome",
+                    type = "TRANSACTION",
+                ),
+            )
+        }
     }
 }

@@ -84,7 +84,7 @@ fun SearchScreen(
                 ) {
                     items(state.results, key = { it.id }) { t ->
                         TransactionRow(
-                            title = t.note.ifBlank { if (t.isExpense) "Expense" else "Income" },
+                            title = t.title.ifBlank { t.note.ifBlank { if (t.isExpense) "Expense" else "Income" } },
                             subtitle = DateUtils.fullDate(t.date),
                             icon = null,
                             iconColor = if (t.isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
