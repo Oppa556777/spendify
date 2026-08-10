@@ -205,5 +205,7 @@ class CategoriesActivity : Activity() {
         builder.show()
     }
 
-    private fun root(): LinearLayout = findViewById(android.R.id.content) as LinearLayout
+    private fun root(): LinearLayout =
+        findViewById<android.view.ViewGroup>(android.R.id.content).getChildAt(0) as? LinearLayout
+            ?: LinearLayout(this)
 }

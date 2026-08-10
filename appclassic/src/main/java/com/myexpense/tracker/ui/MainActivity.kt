@@ -63,20 +63,19 @@ class MainActivity : Activity() {
 
             showTab(0)
         } catch (t: Throwable) {
-            // Never die silently: log + show a readable error screen.
+            // Never die silently: show the in-app error report (with Reset data).
             try {
                 android.util.Log.e("MoneyMate", "startup crash", t)
                 val sw = java.io.StringWriter()
                 t.printStackTrace(java.io.PrintWriter(sw))
-                val text = TextView(this).apply {
-                    setTextColor(color(R.color.text))
-                    textSize = 14f
-                    setPadding(dp(24), dp(24), dp(24), dp(24))
-                    text = "MoneyMate hit an error:\n\n${t.javaClass.name}: ${t.message}\n\n" +
-                        sw.toString().take(1500) +
-                        "\n\nCrash log saved at: " + filesDir.absolutePath + "/crash.log"
-                }
-                setContentView(text)
+                startActivity(
+                    Intent(this, ErrorActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        putExtra("error", t.javaClass.name + ": " + (t.message ?: ""))
+                        putExtra("stack", sw.toString())
+                    }
+                )
+                finish()
             } catch (_: Throwable) {
             }
         }

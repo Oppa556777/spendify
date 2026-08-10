@@ -23,13 +23,20 @@ class LockActivity : Activity() {
     private val requestCode = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemeChoice()
+        try {
+            applyThemeChoice()
+        } catch (_: Throwable) {
+        }
         super.onCreate(savedInstanceState)
-
-        val enabled = Prefs.biometricEnabled(this)
-        val keyguard = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
-        if (!enabled || !keyguard.isDeviceSecure) {
-            goToMain()
+        try {
+            val enabled = Prefs.biometricEnabled(this)
+            val keyguard = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
+            if (!enabled || !keyguard.isDeviceSecure) {
+                goToMain()
+                return
+            }
+        } catch (t: Throwable) {
+            showError(t)
             return
         }
 
@@ -81,6 +88,24 @@ class LockActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == this.requestCode && resultCode == RESULT_OK) {
             goToMain()
+        }
+    }
+
+    private fun showError(t: Throwable) {
+        try {
+            val sw = java.io.StringWriter()
+            t.printStackTrace(java.io.PrintWriter(sw))
+            startActivity(
+                Intent(this, ErrorActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    putExtra("error", t.javaClass.name + ": " + (t.message ?: ""))
+                    putExtra("stack", sw.toString())
+                }
+            )
+            finish()
+        } catch (_: Throwable) {
+            android.util.Log.e("MoneyMate", "lock crash", t)
+            finish()
         }
     }
 
