@@ -131,11 +131,35 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
 - **Security** – device-credential / biometric lock (framework
   `KeyguardManager`, no Play-services dependency)
 
+## Installing the APK
+
+1. On your phone, enable **Settings → Security → Install unknown apps** for
+   your browser/files app.
+2. Download `apk/MoneyMate-v1.0.0.apk` (direct link below) and tap it.
+3. If you had a **previous MoneyMate installed with a different signing key**,
+   uninstall it first (Android won't overwrite apps signed by another key):
+   `Settings → Apps → MoneyMate → Uninstall`, then install the new APK.
+4. If installing over USB: `adb install -r apk/MoneyMate-v1.0.0.apk`.
+
+Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.0.apk
+
 ## Building the Compose app (normal environment)
 
 ```bash
 ./gradlew :app:assembleDebug        # needs JDK 17+, Android SDK 34
 ```
+
+## Installing the APK
+
+1. On your phone, enable **Settings → Security → Install unknown apps** for
+   your browser/files app.
+2. Download `apk/MoneyMate-v1.0.0.apk` (direct link below) and tap it.
+3. If you had a **previous MoneyMate installed with a different signing key**,
+   uninstall it first (Android won't overwrite apps signed by another key):
+   `Settings → Apps → MoneyMate → Uninstall`, then install the new APK.
+4. If installing over USB: `adb install -r apk/MoneyMate-v1.0.0.apk`.
+
+Direct download: https://github.com/Oppa556777/spendify/raw/arena/019fe7d0-spendify/apk/MoneyMate-v1.0.0.apk
 
 ## Building in a restricted-egress environment
 
