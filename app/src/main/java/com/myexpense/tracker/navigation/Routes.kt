@@ -17,6 +17,9 @@ object Routes {
     const val EDIT_TRANSACTION = "transaction/edit/{id}"
     const val ACCOUNT_DETAIL = "account/detail/{id}"
     const val BUDGET_DETAIL = "budget/detail/{id}"
+    const val GOALS = "goals"
+    const val LOANS = "loans"
+    const val SUBSCRIPTIONS = "subscriptions"
     const val ONBOARDING = "onboarding"
 
     fun addTransaction(type: TransactionType): String = "transaction/add?type=${type.name}"

@@ -14,6 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Savings
@@ -49,6 +52,9 @@ fun SettingsScreen(
     onOpenAccounts: () -> Unit,
     onOpenCategories: () -> Unit,
     onOpenBudgets: () -> Unit,
+    onOpenGoals: () -> Unit,
+    onOpenLoans: () -> Unit,
+    onOpenSubscriptions: () -> Unit,
     onOpenBackup: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -207,6 +213,24 @@ fun SettingsScreen(
                 title = "Budgets",
                 subtitle = "Monthly limits per category",
                 onClick = onOpenBudgets,
+            )
+            SettingRow(
+                icon = Icons.Filled.Star,
+                title = "Savings Goals",
+                subtitle = "Track your savings goals",
+                onClick = onOpenGoals,
+            )
+            SettingRow(
+                icon = Icons.Filled.Payments,
+                title = "Loans",
+                subtitle = "Money lent & borrowed",
+                onClick = onOpenLoans,
+            )
+            SettingRow(
+                icon = Icons.Filled.Subscriptions,
+                title = "Subscriptions",
+                subtitle = "Recurring payments & reminders",
+                onClick = onOpenSubscriptions,
             )
             SettingRow(
                 icon = Icons.Filled.Storage,

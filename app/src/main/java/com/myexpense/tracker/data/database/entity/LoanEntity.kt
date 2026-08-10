@@ -15,6 +15,7 @@ data class LoanEntity(
     val personName: String,
     val amount: Double,
     val paidAmount: Double = 0.0,
+    val date: Long = 0,                     // loan date (epoch millis)
     val dueDate: Long? = null,
     val note: String? = null,
     val isSettled: Boolean = false,

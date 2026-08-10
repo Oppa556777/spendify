@@ -242,7 +242,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun markSubscriptionNoted(reminder: SubscriptionReminder) {
-        viewModelScope.launch { subscriptionRepository.markNoted(reminder) }
+        viewModelScope.launch { subscriptionRepository.markNoted(reminder.id) }
     }
 
     private fun greetingFor(hour: Int): String = when (hour) {

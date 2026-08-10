@@ -48,6 +48,17 @@ interface LoanDao {
     )
     fun observeOutstandingBorrowed(): Flow<Double>
 
+    /** Total original lent amount (all loans). */
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM loans WHERE type = 'LENT'")
+    fun observeTotalLent(): Flow<Double>
+
+    /** Total original borrowed amount (all loans). */
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM loans WHERE type = 'BORROWED'")
+    fun observeTotalBorrowed(): Flow<Double>
+
+    @Query("UPDATE loans SET paidAmount = :paidAmount WHERE id = :id")
+    suspend fun updatePaidAmount(id: Long, paidAmount: Double)
+
     @Query("UPDATE loans SET isSettled = 1 WHERE id = :id")
     suspend fun markSettled(id: Long)
 

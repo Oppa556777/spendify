@@ -27,6 +27,9 @@ import com.myexpense.tracker.ui.screens.backup.BackupRestoreScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetsScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetDetailScreen
 import com.myexpense.tracker.ui.screens.categories.CategoriesScreen
+import com.myexpense.tracker.ui.screens.goals.GoalsScreen
+import com.myexpense.tracker.ui.screens.loans.LoansScreen
+import com.myexpense.tracker.ui.screens.subscriptions.SubscriptionsScreen
 import com.myexpense.tracker.ui.screens.home.HomeScreen
 import com.myexpense.tracker.ui.screens.search.SearchScreen
 import com.myexpense.tracker.ui.screens.settings.SettingsScreen
@@ -141,6 +144,9 @@ fun MoneyMateNavHost() {
                         onOpenAccounts = { navController.navigate(Routes.ACCOUNTS) },
                         onOpenCategories = { navController.navigate(Routes.CATEGORIES) },
                         onOpenBudgets = { navController.navigate(Routes.BUDGETS) },
+                        onOpenGoals = { navController.navigate(Routes.GOALS) },
+                        onOpenLoans = { navController.navigate(Routes.LOANS) },
+                        onOpenSubscriptions = { navController.navigate(Routes.SUBSCRIPTIONS) },
                         onOpenBackup = { navController.navigate(Routes.BACKUP) },
                     )
                 }
@@ -168,6 +174,18 @@ fun MoneyMateNavHost() {
 
                 composable(Routes.CATEGORIES) {
                     CategoriesScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.GOALS) {
+                    GoalsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.LOANS) {
+                    LoansScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.SUBSCRIPTIONS) {
+                    SubscriptionsScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Routes.SEARCH) {

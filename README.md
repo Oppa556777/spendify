@@ -71,6 +71,16 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   income-sources pie, savings-rate gauge, net-worth area chart, top-5
   horizontal bars and a cash-flow waterfall — every chart animates on entry,
   supports tap tooltips, works in light/dark, plus PDF/CSV export
+- **Goals** – gradient savings-goal cards with progress rings, animated
+  progress bars, Add Money quick-add, deadline labels and confetti on
+  completion; add/edit sheet with icon/color/account/note
+- **Loans** – "I Lent" (blue) / "I Borrowed" (orange) sections with totals,
+  avatar cards showing original/remaining/due, Active/Overdue/Settled status,
+  partial payments and mark-settled
+- **Subscriptions** – monthly/yearly totals + active count, category filter,
+  cards with first-letter icons, due-in chips color-coded by urgency
+  (green/orange/red), active/paused toggles, Pay-to-advance; add sheet with
+  cycle/category/reminder/color
 - **Settings** – theme (system/light/dark), currency symbol, biometric lock
 - **Export** – CSV (all transactions) and PDF monthly report
 - **Backup/Restore** – full JSON backup to any local folder, with preview

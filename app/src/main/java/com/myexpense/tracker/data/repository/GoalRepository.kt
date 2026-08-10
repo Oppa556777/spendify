@@ -34,6 +34,14 @@ class GoalRepository @Inject constructor(
 
     suspend fun delete(id: Long) = dao.deleteById(id)
 
+    /** Adds money to a goal's saved amount (minor units); auto-completes at 100%. */
+    suspend fun addMoney(id: Long, amountMinor: Long) {
+        val goal = dao.getById(id) ?: return
+        val newSaved = (goal.savedAmount.toMinorUnits() + amountMinor).coerceAtMost(goal.targetAmount.toMinorUnits())
+        val completed = newSaved >= goal.targetAmount.toMinorUnits()
+        dao.update(goal.copy(savedAmount = newSaved.toRupees(), isCompleted = completed))
+    }
+
     suspend fun insertAll(goals: List<Goal>) = dao.insertAll(goals.map { it.toEntity() })
 
     suspend fun deleteAll() = dao.deleteAll()
