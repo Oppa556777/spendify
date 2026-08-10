@@ -11,18 +11,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.myexpense.tracker.data.model.TransactionType
 
-/** Expense / Income segmented control. */
+/** Expense / Income / Transfer segmented control. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TypeSelector(
     selected: TransactionType,
     onSelect: (TransactionType) -> Unit,
     modifier: Modifier = Modifier,
+    includeTransfer: Boolean = false,
 ) {
-    val options = listOf(
-        TransactionType.EXPENSE to "Expense",
-        TransactionType.INCOME to "Income",
-    )
+    val options = buildList {
+        add(TransactionType.EXPENSE to "Expense")
+        add(TransactionType.INCOME to "Income")
+        if (includeTransfer) add(TransactionType.TRANSFER to "Transfer")
+    }
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, (type, label) ->
             SegmentedButton(
@@ -36,6 +38,7 @@ fun TypeSelector(
                         color = when (type) {
                             TransactionType.EXPENSE -> MaterialTheme.colorScheme.error
                             TransactionType.INCOME -> MaterialTheme.colorScheme.primary
+                            TransactionType.TRANSFER -> MaterialTheme.colorScheme.tertiary
                         },
                     )
                 },

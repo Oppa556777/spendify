@@ -63,27 +63,45 @@ class TransactionsViewModel @Inject constructor(
     private val monthIncome = month.flatMapLatest { transactionRepository.observeIncomeForMonth(it) }
     private val monthExpense = month.flatMapLatest { transactionRepository.observeExpenseForMonth(it) }
 
-    val uiState: StateFlow<TransactionsUiState> = combine(
+    private data class ListPart(
+        val args: FilterArgs,
+        val list: List<Transaction>,
+        val categories: List<Category>,
+        val accounts: List<Account>,
+    )
+
+    private data class MoneyPart(
+        val income: Long,
+        val expense: Long,
+        val symbol: String,
+    )
+
+    private val listPart = combine(
         filters,
         filteredTransactions,
         categoryRepository.observeAll(),
         accountRepository.observeActive(),
-        settingsRepository.settings,
-        monthIncome,
-        monthExpense,
-    ) { args, list, categories, accounts, settings, income, expense ->
+    ) { args, list, categories, accounts ->
+        ListPart(args, list, categories, accounts)
+    }
+
+    private val moneyPart = combine(monthIncome, monthExpense, settingsRepository.settings) { income, expense, settings ->
+        MoneyPart(income, expense, settings.currencySymbol)
+    }
+
+    val uiState: StateFlow<TransactionsUiState> = combine(listPart, moneyPart) { lp, mp ->
         TransactionsUiState(
-            month = args.month,
-            typeFilter = args.type,
-            categoryFilter = args.categoryId,
-            accountFilter = args.accountId,
-            query = args.query,
-            transactions = list,
-            categories = categories,
-            accounts = accounts,
-            currencySymbol = settings.currencySymbol,
-            monthIncome = income,
-            monthExpense = expense,
+            month = lp.args.month,
+            typeFilter = lp.args.type,
+            categoryFilter = lp.args.categoryId,
+            accountFilter = lp.args.accountId,
+            query = lp.args.query,
+            transactions = lp.list,
+            categories = lp.categories,
+            accounts = lp.accounts,
+            currencySymbol = mp.symbol,
+            monthIncome = mp.income,
+            monthExpense = mp.expense,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TransactionsUiState())
 

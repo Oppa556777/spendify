@@ -10,8 +10,9 @@ import com.myexpense.tracker.data.model.TransactionType
  * The central transactions table.
  *
  * - [date] is an epoch-millisecond timestamp (UTC midnight of the local day).
- * - [categoryId] / [accountId] are NOT NULL (any transaction must be placed
- *   somewhere); RESTRICT prevents silently losing financial history.
+ * - [accountId] is NOT NULL (any transaction must belong to an account);
+ *   [categoryId] is nullable and only required for EXPENSE/INCOME rows
+ *   (TRANSFER transactions move money between accounts without a category).
  * - [tags] holds comma-separated tag IDs.
  */
 @Entity(
@@ -56,7 +57,7 @@ data class TransactionEntity(
     val title: String,
     val amount: Double,
     val type: TransactionType,
-    val categoryId: Long,
+    val categoryId: Long? = null,   // null for TRANSFER transactions
     val accountId: Long,
     val toAccountId: Long? = null,
     val note: String? = null,

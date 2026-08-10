@@ -48,6 +48,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenAccounts: () -> Unit,
     onOpenCategories: () -> Unit,
+    onOpenBudgets: () -> Unit,
     onOpenBackup: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -200,6 +201,12 @@ fun SettingsScreen(
                 title = "Categories",
                 subtitle = "Manage categories & icons",
                 onClick = onOpenCategories,
+            )
+            SettingRow(
+                icon = Icons.Filled.Savings,
+                title = "Budgets",
+                subtitle = "Monthly limits per category",
+                onClick = onOpenBudgets,
             )
             SettingRow(
                 icon = Icons.Filled.Storage,

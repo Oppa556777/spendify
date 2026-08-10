@@ -33,8 +33,12 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   API with compat), 4-step onboarding with a HorizontalPager and animated
   vector illustrations, then a one-time setup sheet (currency, primary
   account, starting balance, fingerprint lock) — never shown again
-- **Dashboard** – total balance hero card, monthly income/expenses, recent
-  transactions, budget progress
+- **Dashboard** – animated hero balance card (gradient, eye toggle with blur,
+  per-account swipe switcher), period filter chips (Today…Custom), 7-day
+  spending bar chart with tap tooltips, quick actions, animated budget
+  progress cards, swipe-to-edit/delete transactions with a detail bottom
+  sheet, savings goal rings, subscription reminders, floating pill bottom nav
+  with a spring-animated + speed dial
 - **Transactions** – add / edit / delete expenses & incomes with category,
   account, date and note; filter by month, type, category, account; search
 - **Categories** – 18 built-in defaults, fully editable; pick from emoji icons

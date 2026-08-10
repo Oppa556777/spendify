@@ -4,6 +4,7 @@ import com.myexpense.tracker.data.database.dao.MonthTotalRow
 import com.myexpense.tracker.data.database.dao.TransactionDao
 import com.myexpense.tracker.data.database.entity.TransactionEntity
 import com.myexpense.tracker.data.model.CategoryStat
+import com.myexpense.tracker.data.model.DailyStat
 import com.myexpense.tracker.data.model.MonthlyPoint
 import com.myexpense.tracker.data.model.Transaction
 import com.myexpense.tracker.data.model.TransactionType
@@ -65,6 +66,31 @@ class TransactionRepository @Inject constructor(
         combine(dao.observeTotalIncome(), dao.observeTotalExpense()) { income, expense ->
             income.toMinorUnits() to expense.toMinorUnits()
         }
+
+    /** Income and expense (minor units) between two dates, per account. */
+    fun observePeriodTotals(from: Long, to: Long, accountId: Long?): Flow<Pair<Long, Long>> =
+        combine(
+            dao.observeIncomeBetween(from, to, accountId),
+            dao.observeExpenseBetween(from, to, accountId),
+        ) { income, expense -> income.toMinorUnits() to expense.toMinorUnits() }
+
+    /** Last [days] days of income/expense for the overview chart. */
+    fun observeDailySeries(days: Int = 7): Flow<List<DailyStat>> {
+        val today = LocalDate.now()
+        val from = today.minusDays((days - 1).toLong())
+        return dao.observeDailyTotals(from.toEpochMillis(), today.toEpochMillis()).map { rows ->
+            val byDay = rows.groupBy { it.day }
+            (0 until days).map { offset ->
+                val day = from.plusDays(offset.toLong())
+                val key = day.toString()
+                DailyStat(
+                    date = day,
+                    income = byDay[key]?.firstOrNull { it.type == TransactionType.INCOME }?.total?.toMinorUnits() ?: 0L,
+                    expense = byDay[key]?.firstOrNull { it.type == TransactionType.EXPENSE }?.total?.toMinorUnits() ?: 0L,
+                )
+            }
+        }
+    }
 
     /** Per-category expense stats for a month ("yyyy-MM"). */
     fun observeCategoryStats(monthKey: String, type: TransactionType): Flow<List<CategoryStat>> {
@@ -149,7 +175,7 @@ class TransactionRepository @Inject constructor(
         title = title,
         amount = amount.toRupees(),
         type = type,
-        categoryId = requireNotNull(categoryId) { "Transaction requires a category" },
+        categoryId = categoryId,
         accountId = requireNotNull(accountId) { "Transaction requires an account" },
         toAccountId = toAccountId,
         note = note.ifBlank { null },

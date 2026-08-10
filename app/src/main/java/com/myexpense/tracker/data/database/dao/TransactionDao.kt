@@ -22,6 +22,13 @@ data class CategoryTotalRow(
     val count: Int,
 )
 
+/** One day of the daily income/expense aggregation (day = "yyyy-MM-dd"). */
+data class DailyTotalRow(
+    val day: String,
+    val type: TransactionType,
+    val total: Double,
+)
+
 /** Income vs expense for a period in one row. */
 data class PeriodTotalsRow(
     val income: Double,
@@ -123,11 +130,39 @@ interface TransactionDao {
     )
     fun observeIncomeBetween(from: Long, to: Long): Flow<Double>
 
+    /** Income between dates, optionally restricted to one account. */
+    @Query(
+        "SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) " +
+            "FROM transactions WHERE date BETWEEN :from AND :to AND (:accountId IS NULL OR accountId = :accountId)"
+    )
+    fun observeIncomeBetween(from: Long, to: Long, accountId: Long?): Flow<Double>
+
     @Query(
         "SELECT COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0) " +
             "FROM transactions WHERE date BETWEEN :from AND :to"
     )
     fun observeExpenseBetween(from: Long, to: Long): Flow<Double>
+
+    /** Expense between dates, optionally restricted to one account. */
+    @Query(
+        "SELECT COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0) " +
+            "FROM transactions WHERE date BETWEEN :from AND :to AND (:accountId IS NULL OR accountId = :accountId)"
+    )
+    fun observeExpenseBetween(from: Long, to: Long, accountId: Long?): Flow<Double>
+
+    /** Daily income/expense totals for the 7-day overview chart. */
+    @Query(
+        """
+        SELECT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime') AS day,
+               type,
+               SUM(amount) AS total
+        FROM transactions
+        WHERE date BETWEEN :from AND :to
+        GROUP BY day, type
+        ORDER BY day ASC
+        """
+    )
+    fun observeDailyTotals(from: Long, to: Long): Flow<List<DailyTotalRow>>
 
     @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM transactions")
     fun observeTotalIncome(): Flow<Double>

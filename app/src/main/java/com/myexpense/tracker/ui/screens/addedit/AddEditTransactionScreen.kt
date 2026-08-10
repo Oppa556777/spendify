@@ -96,7 +96,7 @@ fun AddEditTransactionScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            TypeSelector(selected = state.type, onSelect = viewModel::setType)
+            TypeSelector(selected = state.type, onSelect = viewModel::setType, includeTransfer = true)
 
             // Title
             OutlinedTextField(
@@ -115,30 +115,32 @@ fun AddEditTransactionScreen(
                 symbol = state.currencySymbol,
             )
 
-            // Category picker
-            Text("Category", style = MaterialTheme.typography.titleSmall)
-            if (filteredCategories.isEmpty()) {
-                Text(
-                    "No categories for this type yet. Add some in Settings → Categories.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    filteredCategories.forEach { category ->
-                        CategoryChip(
-                            category = category,
-                            selected = state.categoryId == category.id,
-                            onClick = { viewModel.setCategoryId(category.id) },
-                        )
+            // Category picker (hidden for transfers)
+            if (state.type != com.myexpense.tracker.data.model.TransactionType.TRANSFER) {
+                Text("Category", style = MaterialTheme.typography.titleSmall)
+                if (filteredCategories.isEmpty()) {
+                    Text(
+                        "No categories for this type yet. Add some in Settings → Categories.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        filteredCategories.forEach { category ->
+                            CategoryChip(
+                                category = category,
+                                selected = state.categoryId == category.id,
+                                onClick = { viewModel.setCategoryId(category.id) },
+                            )
+                        }
                     }
                 }
             }
 
-            // Account picker
+            // Account picker (source account; "From account" for transfers)
             if (state.accounts.isNotEmpty()) {
                 ExposedDropdownMenuBox(
                     expanded = accountMenuExpanded,
@@ -148,7 +150,9 @@ fun AddEditTransactionScreen(
                         value = selectedAccount?.name ?: "Select account",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Account") },
+                        label = {
+                            Text(if (state.type == com.myexpense.tracker.data.model.TransactionType.TRANSFER) "From account" else "Account")
+                        },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = accountMenuExpanded)
                         },
@@ -166,6 +170,43 @@ fun AddEditTransactionScreen(
                                 onClick = {
                                     viewModel.setAccountId(account.id)
                                     accountMenuExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Destination account (transfers only)
+            if (state.type == com.myexpense.tracker.data.model.TransactionType.TRANSFER && state.accounts.isNotEmpty()) {
+                var toMenuExpanded by remember { mutableStateOf(false) }
+                val selectedToAccount = state.accounts.firstOrNull { it.id == state.toAccountId }
+                ExposedDropdownMenuBox(
+                    expanded = toMenuExpanded,
+                    onExpandedChange = { toMenuExpanded = it },
+                ) {
+                    OutlinedTextField(
+                        value = selectedToAccount?.name ?: "Select destination",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("To account") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = toMenuExpanded)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true),
+                    )
+                    ExposedDropdownMenu(
+                        expanded = toMenuExpanded,
+                        onDismissRequest = { toMenuExpanded = false },
+                    ) {
+                        state.accounts.filter { it.id != state.accountId }.forEach { account ->
+                            DropdownMenuItem(
+                                text = { Text(account.name) },
+                                onClick = {
+                                    viewModel.setToAccountId(account.id)
+                                    toMenuExpanded = false
                                 },
                             )
                         }

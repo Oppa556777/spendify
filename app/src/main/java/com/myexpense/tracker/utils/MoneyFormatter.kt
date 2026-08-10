@@ -36,6 +36,32 @@ object MoneyFormatter {
         return if (amountMinor < 0) "-$symbol${body.removePrefix("-")}" else "+$symbol$body"
     }
 
+    /**
+     * Indian-style grouping ("₹1,24,500.00"): the last 3 digits group as one,
+     * every group before it has 2 digits.
+     */
+    fun formatIndian(amountMinor: Long, symbol: String): String {
+        val abs = kotlin.math.abs(amountMinor)
+        val sign = if (amountMinor < 0) "-" else ""
+        val rupees = abs / 100
+        val paise = (abs % 100).toString().padStart(2, '0')
+        val grouped = indianGroup(rupees.toString())
+        return "$sign$symbol$grouped.$paise"
+    }
+
+    private fun indianGroup(digits: String): String {
+        if (digits.length <= 3) return digits
+        val last = digits.takeLast(3)
+        var rest = digits.dropLast(3)
+        val groups = mutableListOf<String>()
+        while (rest.length > 2) {
+            groups.add(0, rest.takeLast(2))
+            rest = rest.dropLast(2)
+        }
+        if (rest.isNotEmpty()) groups.add(0, rest)
+        return groups.joinToString(",") + "," + last
+    }
+
     /** Compact form for large balances: 1234567 → "1.23M". */
     fun formatCompact(amountMinor: Long, symbol: String): String {
         val abs = kotlin.math.abs(amountMinor)

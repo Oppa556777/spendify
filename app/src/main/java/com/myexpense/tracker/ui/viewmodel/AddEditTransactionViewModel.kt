@@ -28,6 +28,7 @@ data class AddEditTransactionUiState(
     val amountMinor: String = "",
     val categoryId: Long? = null,
     val accountId: Long? = null,
+    val toAccountId: Long? = null,
     val note: String = "",
     val date: LocalDate = LocalDate.now(),
     val categories: List<Category> = emptyList(),
@@ -48,12 +49,16 @@ class AddEditTransactionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val editingId: Long = savedStateHandle.get<Long>("id") ?: 0L
+    private val presetType: TransactionType = runCatching {
+        TransactionType.valueOf(savedStateHandle.get<String>("type") ?: TransactionType.EXPENSE.name)
+    }.getOrDefault(TransactionType.EXPENSE)
 
-    private val type = MutableStateFlow(TransactionType.EXPENSE)
+    private val type = MutableStateFlow(presetType)
     private val title = MutableStateFlow("")
     private val amountMinor = MutableStateFlow("")
     private val categoryId = MutableStateFlow<Long?>(null)
     private val accountId = MutableStateFlow<Long?>(null)
+    private val toAccountId = MutableStateFlow<Long?>(null)
     private val note = MutableStateFlow("")
     private val date = MutableStateFlow(LocalDate.now())
     private val saved = MutableStateFlow(false)
@@ -65,6 +70,7 @@ class AddEditTransactionViewModel @Inject constructor(
         val amountMinor: String,
         val categoryId: Long?,
         val accountId: Long?,
+        val toAccountId: Long?,
         val note: String,
         val date: LocalDate,
         val saved: Boolean,
@@ -77,12 +83,24 @@ class AddEditTransactionViewModel @Inject constructor(
         val currencySymbol: String,
     )
 
-    private val form = combine(type, title, amountMinor, categoryId, accountId, note) { t, ti, am, c, a, n ->
-        FormPart1(t, ti, am, c, a, n)
-    }.let { part1 ->
-        combine(part1, date, saved, error) { p1, d, s, e ->
-            Form(p1.type, p1.title, p1.amountMinor, p1.categoryId, p1.accountId, p1.note, d, s, e)
-        }
+    private data class FormPart0(
+        val type: TransactionType,
+        val title: String,
+        val amountMinor: String,
+        val categoryId: Long?,
+        val accountId: Long?,
+    )
+
+    private val formPart0 = combine(type, title, amountMinor, categoryId, accountId) { t, ti, am, c, a ->
+        FormPart0(t, ti, am, c, a)
+    }
+
+    private val formPart1 = combine(formPart0, toAccountId, note) { p0, ta, n ->
+        FormPart1(p0.type, p0.title, p0.amountMinor, p0.categoryId, p0.accountId, ta, n)
+    }
+
+    private val form = combine(formPart1, date, saved, error) { p1, d, s, e ->
+        Form(p1.type, p1.title, p1.amountMinor, p1.categoryId, p1.accountId, p1.toAccountId, p1.note, d, s, e)
     }
 
     private val reference = combine(
@@ -101,6 +119,7 @@ class AddEditTransactionViewModel @Inject constructor(
             amountMinor = f.amountMinor,
             categoryId = f.categoryId,
             accountId = f.accountId,
+            toAccountId = f.toAccountId,
             note = f.note,
             date = f.date,
             categories = r.categories,
@@ -118,6 +137,7 @@ class AddEditTransactionViewModel @Inject constructor(
         val amountMinor: String,
         val categoryId: Long?,
         val accountId: Long?,
+        val toAccountId: Long?,
         val note: String,
     )
 
@@ -130,6 +150,7 @@ class AddEditTransactionViewModel @Inject constructor(
                     amountMinor.value = formatAmountInput(t.amount)
                     categoryId.value = t.categoryId
                     accountId.value = t.accountId
+                    toAccountId.value = t.toAccountId
                     note.value = t.note
                     date.value = t.date
                 }
@@ -154,12 +175,20 @@ class AddEditTransactionViewModel @Inject constructor(
         val stillValid = current != null &&
             uiState.value.categories.any { it.id == current && it.type == t }
         if (!stillValid) categoryId.value = null
+        // Transfers don't use categories; other types don't use a destination.
+        if (t == TransactionType.TRANSFER) {
+            categoryId.value = null
+            if (toAccountId.value == accountId.value) toAccountId.value = null
+        } else {
+            toAccountId.value = null
+        }
     }
 
     fun setTitle(value: String) { title.value = value }
     fun setAmount(raw: String) { amountMinor.value = raw.filter { it.isDigit() || it == '.' } }
     fun setCategoryId(id: Long?) { categoryId.value = id }
     fun setAccountId(id: Long?) { accountId.value = id }
+    fun setToAccountId(id: Long?) { toAccountId.value = id }
     fun setNote(n: String) { note.value = n }
     fun setDate(d: LocalDate) { date.value = d }
 
@@ -172,27 +201,43 @@ class AddEditTransactionViewModel @Inject constructor(
         }
         val state = uiState.value
 
-        // categoryId/accountId are NOT NULL in the schema: default them when unset.
-        val category = categoryId.value
-            ?: state.categories.firstOrNull { it.type == type.value }?.id
-        if (category == null) {
-            error.value = "Add a ${type.value.name.lowercase()} category first (More → Categories)"
-            return
-        }
         val account = accountId.value ?: state.accounts.firstOrNull()?.id
         if (account == null) {
             error.value = "Add an account first (More → Accounts)"
             return
         }
 
+        val isTransfer = type.value == TransactionType.TRANSFER
+        val category = if (isTransfer) {
+            null
+        } else {
+            categoryId.value ?: state.categories.firstOrNull { it.type == type.value }?.id
+        }
+        if (!isTransfer && category == null) {
+            error.value = "Add a ${type.value.name.lowercase()} category first (More → Categories)"
+            return
+        }
+        val toAccount = toAccountId.value
+        if (isTransfer && toAccount == null) {
+            error.value = "Select a destination account for the transfer"
+            return
+        }
+        if (isTransfer && toAccount == account) {
+            error.value = "Destination account must differ from the source account"
+            return
+        }
+
         val minor = (parsed * 100).toLong().coerceAtLeast(1)
         val transaction = Transaction(
             id = editingId,
-            title = title.value.trim(),
+            title = title.value.ifBlank {
+                if (isTransfer) "Transfer" else if (type.value == TransactionType.INCOME) "Income" else "Expense"
+            },
             amount = minor,
             type = type.value,
             categoryId = category,
             accountId = account,
+            toAccountId = toAccount,
             note = note.value.trim(),
             date = date.value,
         )
