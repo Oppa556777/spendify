@@ -29,6 +29,13 @@ data class DailyTotalRow(
     val total: Double,
 )
 
+/** One month × category cell of the aggregation. */
+data class MonthlyCategoryRow(
+    val month: String,          // "yyyy-MM"
+    val categoryId: Long?,
+    val total: Double,
+)
+
 /** Income vs expense for a period in one row. */
 data class PeriodTotalsRow(
     val income: Double,
@@ -167,6 +174,20 @@ interface TransactionDao {
         """
     )
     fun observeDailyTotals(from: Long, to: Long): Flow<List<DailyTotalRow>>
+
+    /** Monthly × category aggregation for the category-trend chart. */
+    @Query(
+        """
+        SELECT strftime('%Y-%m', date / 1000, 'unixepoch', 'localtime') AS month,
+               categoryId,
+               SUM(amount) AS total
+        FROM transactions
+        WHERE type = :type AND date BETWEEN :from AND :to
+        GROUP BY month, categoryId
+        ORDER BY month ASC
+        """
+    )
+    fun observeMonthlyCategoryTotals(from: Long, to: Long, type: TransactionType): Flow<List<MonthlyCategoryRow>>
 
     @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM transactions")
     fun observeTotalIncome(): Flow<Double>

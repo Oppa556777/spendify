@@ -28,7 +28,7 @@ import com.myexpense.tracker.ui.screens.categories.CategoriesScreen
 import com.myexpense.tracker.ui.screens.home.HomeScreen
 import com.myexpense.tracker.ui.screens.search.SearchScreen
 import com.myexpense.tracker.ui.screens.settings.SettingsScreen
-import com.myexpense.tracker.ui.screens.stats.StatsScreen
+import com.myexpense.tracker.ui.screens.reports.ReportsScreen
 import com.myexpense.tracker.ui.screens.transactions.TransactionsScreen
 
 /** Routes shown in the floating pill bottom bar. */
@@ -111,7 +111,7 @@ fun MoneyMateNavHost() {
                 }
 
                 composable(Routes.STATS) {
-                    StatsScreen(
+                    ReportsScreen(
                         onBack = { navController.popBackStack() },
                     )
                 }

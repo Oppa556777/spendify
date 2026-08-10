@@ -53,7 +53,12 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
 - **Accounts** – cash, bank, card, e-wallet… with live balances
 - **Budgets** – monthly per-category limits with progress bars & overspend
   warnings
-- **Statistics** – category donut + breakdown, 12-month income/expense chart
+- **Reports & Analytics** – 10 interactive Canvas charts in M3 cards: grouped
+  income/expense bars, expense donut with breakdown, this-vs-last-month daily
+  spending lines, GitHub-style spending heatmap, top-5 category trend lines,
+  income-sources pie, savings-rate gauge, net-worth area chart, top-5
+  horizontal bars and a cash-flow waterfall — every chart animates on entry,
+  supports tap tooltips, works in light/dark, plus PDF/CSV export
 - **Settings** – theme (system/light/dark), currency symbol, biometric lock
 - **Export** – CSV (all transactions) and PDF monthly report
 - **Backup/Restore** – full JSON backup to any local folder, with preview

@@ -80,9 +80,14 @@ class TransactionRepository @Inject constructor(
     /** Last [days] days of income/expense for the overview chart. */
     fun observeDailySeries(days: Int = 7): Flow<List<DailyStat>> {
         val today = LocalDate.now()
-        val from = today.minusDays((days - 1).toLong())
-        return dao.observeDailyTotals(from.toEpochMillis(), today.toEpochMillis()).map { rows ->
+        return observeDailyRange(today.minusDays((days - 1).toLong()), today)
+    }
+
+    /** Daily income/expense totals between two dates (inclusive). */
+    fun observeDailyRange(from: LocalDate, to: LocalDate): Flow<List<DailyStat>> =
+        dao.observeDailyTotals(from.toEpochMillis(), to.toEpochMillis()).map { rows ->
             val byDay = rows.groupBy { it.day }
+            val days = java.time.temporal.ChronoUnit.DAYS.between(from, to).toInt() + 1
             (0 until days).map { offset ->
                 val day = from.plusDays(offset.toLong())
                 val key = day.toString()
@@ -93,13 +98,14 @@ class TransactionRepository @Inject constructor(
                 )
             }
         }
-    }
 
-    /** Per-category expense stats for a month ("yyyy-MM"). */
-    fun observeCategoryStats(monthKey: String, type: TransactionType): Flow<List<CategoryStat>> {
-        val month = runCatching { YearMonth.parse(monthKey) }.getOrNull()
-            ?: return flowOf(emptyList())
-        return dao.observeCategoryTotals(month.startMillis(), month.endMillis(), type).map { rows ->
+    /** Per-category totals (minor units) between dates, for a type. */
+    fun observeCategoryStatsBetween(
+        from: LocalDate,
+        to: LocalDate,
+        type: TransactionType,
+    ): Flow<List<CategoryStat>> =
+        dao.observeCategoryTotals(from.toEpochMillis(), to.toEpochMillis(), type).map { rows ->
             rows.map { row ->
                 CategoryStat(
                     categoryId = row.categoryId,
@@ -108,6 +114,12 @@ class TransactionRepository @Inject constructor(
                 )
             }
         }
+
+    /** Per-category expense stats for a month ("yyyy-MM"). */
+    fun observeCategoryStats(monthKey: String, type: TransactionType): Flow<List<CategoryStat>> {
+        val month = runCatching { YearMonth.parse(monthKey) }.getOrNull()
+            ?: return flowOf(emptyList())
+        return observeCategoryStatsBetween(month.atDay(1), month.atEndOfMonth(), type)
     }
 
     /** Monthly income/expense series between two dates (inclusive). */
@@ -115,6 +127,14 @@ class TransactionRepository @Inject constructor(
         dao.observeMonthlyTotals(from.toEpochMillis(), to.toEpochMillis()).map { rows ->
             buildSeries(YearMonth.from(from), YearMonth.from(to), rows)
         }
+
+    /** Monthly × category aggregation (for the category-trend chart). */
+    fun observeMonthlyCategoryTotals(
+        from: LocalDate,
+        to: LocalDate,
+        type: TransactionType,
+    ): Flow<List<com.myexpense.tracker.data.database.dao.MonthlyCategoryRow>> =
+        dao.observeMonthlyCategoryTotals(from.toEpochMillis(), to.toEpochMillis(), type)
 
     suspend fun save(transaction: Transaction): Long {
         val entity = transaction.toEntity()
