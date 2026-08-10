@@ -25,6 +25,7 @@ set -euo pipefail
 : "${AAPT2:?set AAPT2}"
 : "${KOTLINC:?set KOTLINC (kotlinc script)}"
 : "${DX_JAR:?set DX_JAR (compiled dx.jar)}"
+: "${APKSIGNER:?set APKSIGNER (apksigner.jar from uber-apk-signer)}"
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUT="$ROOT/out"
@@ -64,14 +65,18 @@ echo "== dex =="
 echo "== package =="
 (cd "$BUILD/apk" && "$JDK8_HOME/bin/jar" uf base.apk classes.dex)
 
-echo "== sign =="
+echo "== sign (apksigner v1+v2+v3) =="
 if [ ! -f "$BUILD/debug.keystore" ]; then
   "$JDK8_HOME/bin/keytool" -genkeypair -keystore "$BUILD/debug.keystore" \
     -alias androiddebugkey -storepass android -keypass android \
     -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
 fi
-"$JDK8_HOME/bin/jarsigner" -keystore "$BUILD/debug.keystore" -storepass android -keypass android \
-  -sigalg SHA1withRSA -digestalg SHA1 "$BUILD/apk/base.apk" androiddebugkey
+"$JDK8_HOME/bin/java" -jar "$APKSIGNER" sign \
+  --ks "$BUILD/debug.keystore" --ks-pass pass:android \
+  --ks-key-alias androiddebugkey --key-pass pass:android \
+  --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
+  --out "$BUILD/apk/base-signed.apk" "$BUILD/apk/base.apk"
+mv "$BUILD/apk/base-signed.apk" "$BUILD/apk/base.apk"
 
 mkdir -p "$OUT"
 cp "$BUILD/apk/base.apk" "$OUT/MoneyMate-v1.0.0.apk"
