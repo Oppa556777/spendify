@@ -45,7 +45,8 @@ class SettingsRepository @Inject constructor(
             dynamicColors = prefs[Keys.DYNAMIC] ?: true,
             biometricEnabled = prefs[Keys.BIOMETRIC] ?: false,
             firstRunComplete = prefs[Keys.FIRST_RUN] ?: false,
-            onboardingSeen = prefs[Keys.ONBOARDING] ?: false,
+            // Existing users (seeded before onboarding existed) skip the flow.
+            onboardingSeen = prefs[Keys.ONBOARDING] ?: (prefs[Keys.FIRST_RUN] ?: false),
         )
     }
 
@@ -65,7 +66,13 @@ class SettingsRepository @Inject constructor(
         context.dataStore.edit { it[Keys.BIOMETRIC] = enabled }
     }
 
-    suspend fun setFirstRunComplete() {
+    /** Marks first-launch seeding (default categories/achievements) as done. */
+    suspend fun setSeedingDone() {
+        context.dataStore.edit { it[Keys.FIRST_RUN] = true }
+    }
+
+    /** Marks onboarding (incl. the setup sheet) as complete — never shown again. */
+    suspend fun setOnboardingComplete() {
         context.dataStore.edit {
             it[Keys.FIRST_RUN] = true
             it[Keys.ONBOARDING] = true

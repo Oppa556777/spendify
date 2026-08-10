@@ -29,6 +29,10 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
 
 ## Features
 
+- **Splash + Onboarding** – animated gradient splash (Android 12+ SplashScreen
+  API with compat), 4-step onboarding with a HorizontalPager and animated
+  vector illustrations, then a one-time setup sheet (currency, primary
+  account, starting balance, fingerprint lock) — never shown again
 - **Dashboard** – total balance hero card, monthly income/expenses, recent
   transactions, budget progress
 - **Transactions** – add / edit / delete expenses & incomes with category,

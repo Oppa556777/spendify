@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Onboarding 2: budget meter / gauge with category dots -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- gauge baseline -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M3,17 L21,17" />
+    <!-- gauge arc -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M3,17 A9,9 0 0 1 21,17" />
+    <!-- category dots on the gauge -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M6.5,13.2 m-0.9,0 a0.9,0.9 0 1 0 1.8,0 a0.9,0.9 0 1 0 -1.8,0" />
+    <path
+        android:fillColor="#4FC3F7"
+        android:pathData="M10,11.4 m-0.9,0 a0.9,0.9 0 1 0 1.8,0 a0.9,0.9 0 1 0 -1.8,0" />
+    <path
+        android:fillColor="#F48FB1"
+        android:pathData="M14,11.4 m-0.9,0 a0.9,0.9 0 1 0 1.8,0 a0.9,0.9 0 1 0 -1.8,0" />
+    <path
+        android:fillColor="#AED581"
+        android:pathData="M17.5,13.2 m-0.9,0 a0.9,0.9 0 1 0 1.8,0 a0.9,0.9 0 1 0 -1.8,0" />
+    <!-- needle -->
+    <path
+        android:strokeColor="#FFD54F"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M12,17 L15.5,11.5" />
+    <!-- needle pivot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,17 m-1.2,0 a1.2,1.2 0 1 0 2.4,0 a1.2,1.2 0 1 0 -2.4,0" />
+    <!-- sparkles -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:strokeLineCap="round"
+        android:pathData="M7,5.5 v3 M5.5,7 h3 M17,4.5 v3 M15.5,6 h3" />
+</vector>

@@ -3,7 +3,6 @@ package com.myexpense.tracker
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.fragment.app.FragmentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,19 +33,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
-import com.myexpense.tracker.data.model.ThemeMode
-import dagger.hilt.android.lifecycle.HiltViewModel
 import com.myexpense.tracker.data.repository.SeedRepository
 import com.myexpense.tracker.data.repository.SettingsRepository
 import com.myexpense.tracker.navigation.MoneyMateNavHost
+import com.myexpense.tracker.ui.screens.onboarding.OnboardingFlow
+import com.myexpense.tracker.ui.screens.splash.AnimatedSplashScreen
 import com.myexpense.tracker.ui.theme.MoneyMateTheme
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,10 +58,12 @@ class MainActivity : FragmentActivity() {
     @Inject lateinit var seedRepository: SeedRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Android 12+ system splash (compat down to API 21 via core-splashscreen).
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Seed default categories/account on first launch.
+        // Seed default categories + achievements on first launch.
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 seedRepository.seedIfNeeded()
@@ -73,16 +78,37 @@ class MainActivity : FragmentActivity() {
                 themeMode = settings.themeMode,
                 dynamicColors = settings.dynamicColors,
             ) {
-                val locked = remember(settings.biometricEnabled) {
-                    mutableStateOf(settings.biometricEnabled)
-                }
-                if (settings.biometricEnabled && locked.value) {
-                    LockScreen(
-                        onUnlocked = { locked.value = false },
-                    )
-                } else {
-                    MoneyMateNavHost()
-                }
+                AppRoot(settings = settings)
+            }
+        }
+    }
+}
+
+/**
+ * Root of the app:
+ * splash (2.5 s) → onboarding + setup (first launch) → home.
+ * A returning user (onboarding already seen) goes straight from splash to home,
+ * gated by the biometric lock when enabled.
+ */
+@Composable
+private fun AppRoot(settings: SettingsRepository.Settings) {
+    var splashDone by rememberSaveable { mutableStateOf(false) }
+
+    when {
+        !splashDone -> AnimatedSplashScreen(onFinished = { splashDone = true })
+
+        !settings.onboardingSeen -> OnboardingFlow(onFinished = { /* settings flow flips onboardingSeen → Home */ })
+
+        else -> {
+            val locked = remember(settings.biometricEnabled) {
+                mutableStateOf(settings.biometricEnabled)
+            }
+            if (settings.biometricEnabled && locked.value) {
+                LockScreen(
+                    onUnlocked = { locked.value = false },
+                )
+            } else {
+                MoneyMateNavHost()
             }
         }
     }
@@ -108,7 +134,7 @@ private fun LockScreen(onUnlocked: () -> Unit) {
 
     val biometricPrompt = remember {
         BiometricPrompt(
-            context as androidx.fragment.app.FragmentActivity,
+            context as FragmentActivity,
             ContextCompat.getMainExecutor(context),
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {

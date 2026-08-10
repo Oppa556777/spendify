@@ -5,4 +5,14 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
+
+    <!--
+        Android 12+ system splash (compat back to API 21 via core-splashscreen).
+        The animated Compose splash takes over right after the system splash.
+    -->
+    <style name="Theme.MoneyMate.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_wallet</item>
+        <item name="postSplashScreenTheme">@style/Theme.MoneyMate</item>
+    </style>
 </resources>

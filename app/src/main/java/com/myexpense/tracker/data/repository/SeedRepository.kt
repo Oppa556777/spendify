@@ -2,8 +2,6 @@ package com.myexpense.tracker.data.repository
 
 import com.myexpense.tracker.data.database.dao.AchievementDao
 import com.myexpense.tracker.data.database.entity.AchievementEntity
-import com.myexpense.tracker.data.model.Account
-import com.myexpense.tracker.data.model.AccountType
 import com.myexpense.tracker.data.model.Category
 import com.myexpense.tracker.data.model.TransactionType
 import kotlinx.coroutines.flow.first
@@ -13,13 +11,14 @@ import javax.inject.Singleton
 /**
  * Seeds sensible defaults on first launch:
  * - the 16 default EXPENSE + 8 default INCOME categories
- * - a default "Cash" account (transactions require an account)
  * - the sample achievements (gamification)
+ *
+ * The primary account is created by the onboarding setup sheet instead, so the
+ * user can name it and set its starting balance themselves.
  */
 @Singleton
 class SeedRepository @Inject constructor(
     private val categoryRepository: CategoryRepository,
-    private val accountRepository: AccountRepository,
     private val achievementDao: AchievementDao,
     private val settingsRepository: SettingsRepository,
 ) {
@@ -31,23 +30,10 @@ class SeedRepository @Inject constructor(
         if (categoryRepository.getAll().isEmpty()) {
             categoryRepository.insertAll(defaultCategories())
         }
-        if (accountRepository.getActive().isEmpty()) {
-            accountRepository.save(
-                Account(
-                    name = "Cash",
-                    type = AccountType.CASH,
-                    balance = 0,
-                    currency = "INR",
-                    color = 0xFF4CAF50,
-                    icon = "payments",
-                    isDefault = true,
-                )
-            )
-        }
         if (achievementDao.getAll().isEmpty()) {
             achievementDao.insertAll(sampleAchievements())
         }
-        settingsRepository.setFirstRunComplete()
+        settingsRepository.setSeedingDone()
     }
 
     companion object {

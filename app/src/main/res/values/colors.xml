@@ -2,4 +2,8 @@
 <resources>
     <color name="ic_launcher_background">#1B5E20</color>
     <color name="splash_background">#F7F9F7</color>
+
+    <!-- Splash gradient: Dark Purple #1A1035 → Dark Blue #0D1B4B -->
+    <color name="splash_background_dark">#1A1035</color>
+    <color name="splash_background_blue">#0D1B4B</color>
 </resources>
