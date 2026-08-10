@@ -257,7 +257,10 @@ fun HomeScreen(
                         reminder = reminder,
                         symbol = symbol,
                         onDismiss = { dismissedReminders = dismissedReminders + reminder.id },
-                        onPay = { viewModel.markSubscriptionNoted(reminder) },
+                        onPay = {
+                            viewModel.markSubscriptionNoted(reminder)
+                            dismissedReminders = dismissedReminders + reminder.id
+                        },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     )
                 }
