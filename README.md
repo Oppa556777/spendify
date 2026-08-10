@@ -99,7 +99,22 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   recent-search history
 - **Home-screen widgets** – 2×1 balance widget (today's spending + balance)
   and 4×2 7-day spending graph widget; taps open the app / Reports
-- **Settings** – theme (system/light/dark), currency symbol, biometric lock
+- **More menu** – grouped hub (Tools: Achievements, Bill Splitter, Asset
+  Tracker, People, Tags Manager, Recurring Transactions; Reports: Detailed
+  Reports, Calendar View, Export; Settings; Data: Backup/Restore/Clear with
+  double confirmation; About + version)
+- **Settings** – full control panel: theme (Light/Dark/System/AMOLED), 10
+  accent colors, font size slider; currency (50+), date format, week start,
+  month start day, Indian/international number format; app lock, biometric,
+  lock-after delay, hide-balance-by-default; notification toggles incl. daily
+  reminder time; category management and data management (backup/restore/
+  PDF/CSV/clear-all with 2-step confirm)
+- **Calendar View** – monthly grid with spending-intensity day cells, dot
+  indicators, tap a day for its transactions, month totals and navigation
+- **Tags Manager** – all tags with transaction counts, edit/delete/add,
+  tap to filter (opens Search)
+- **People Manager** – avatars, transaction counts and net balances, tap for
+  a person's transaction history
 - **Export** – CSV (all transactions) and PDF monthly report
 - **Backup/Restore** – full JSON backup to any local folder, with preview
 - **Security** – device-credential / biometric lock (framework

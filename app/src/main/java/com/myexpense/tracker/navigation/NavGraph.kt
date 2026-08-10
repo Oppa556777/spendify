@@ -30,7 +30,13 @@ import com.myexpense.tracker.ui.screens.budgets.BudgetDetailScreen
 import com.myexpense.tracker.ui.screens.achievements.AchievementsScreen
 import com.myexpense.tracker.ui.screens.assets.AssetsScreen
 import com.myexpense.tracker.ui.screens.billsplits.BillSplitsScreen
+import com.myexpense.tracker.ui.screens.calendar.CalendarScreen
 import com.myexpense.tracker.ui.screens.categories.CategoriesScreen
+import com.myexpense.tracker.ui.screens.more.MoreScreen
+import com.myexpense.tracker.ui.screens.people.PeopleScreen
+import com.myexpense.tracker.ui.screens.people.PersonDetailScreen
+import com.myexpense.tracker.ui.screens.recurring.RecurringScreen
+import com.myexpense.tracker.ui.screens.tags.TagsManagerScreen
 import com.myexpense.tracker.ui.screens.goals.GoalsScreen
 import com.myexpense.tracker.ui.screens.loans.LoansScreen
 import com.myexpense.tracker.ui.screens.subscriptions.SubscriptionsScreen
@@ -45,7 +51,7 @@ private val tabRoutes = listOf(
     Routes.HOME,
     Routes.ACCOUNTS,
     Routes.STATS,
-    Routes.SETTINGS,
+    Routes.MORE,
 )
 
 @Composable
@@ -150,6 +156,28 @@ fun MoneyMateNavHost(initialDestination: String? = null) {
                     )
                 }
 
+                composable(Routes.MORE) {
+                    MoreScreen(
+                        onAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
+                        onSplitBill = { navController.navigate(Routes.BILL_SPLITS) },
+                        onAssets = { navController.navigate(Routes.ASSETS) },
+                        onPeople = { navController.navigate(Routes.PEOPLE) },
+                        onTags = { navController.navigate(Routes.TAGS) },
+                        onRecurring = { navController.navigate(Routes.RECURRING) },
+                        onReports = { navController.navigate(Routes.STATS) },
+                        onCalendar = { navController.navigate(Routes.CALENDAR) },
+                        onExport = { navController.navigate(Routes.STATS) },
+                        onSettings = { navController.navigate(Routes.SETTINGS) },
+                        onCurrencies = { navController.navigate(Routes.SETTINGS) },
+                        onCategories = { navController.navigate(Routes.CATEGORIES) },
+                        onAccounts = { navController.navigate(Routes.ACCOUNTS) },
+                        onBackup = { navController.navigate(Routes.BACKUP) },
+                        onRestore = { navController.navigate(Routes.BACKUP) },
+                        onClearAll = { navController.navigate(Routes.SETTINGS) },
+                        onAbout = { navController.navigate(Routes.SETTINGS) },
+                    )
+                }
+
                 composable(Routes.SETTINGS) {
                     SettingsScreen(
                         onBack = { navController.popBackStack() },
@@ -163,6 +191,42 @@ fun MoneyMateNavHost(initialDestination: String? = null) {
                         onOpenSplitBill = { navController.navigate(Routes.BILL_SPLITS) },
                         onOpenAssets = { navController.navigate(Routes.ASSETS) },
                         onOpenBackup = { navController.navigate(Routes.BACKUP) },
+                        onClearAll = { navController.navigate(Routes.SETTINGS) },
+                    )
+                }
+
+                composable(Routes.PEOPLE) {
+                    PeopleScreen(
+                        onBack = { navController.popBackStack() },
+                        onPersonTap = { id -> navController.navigate(Routes.personDetail(id)) },
+                    )
+                }
+
+                composable(
+                    route = Routes.PERSON_DETAIL,
+                    arguments = listOf(navArgument("id") { type = NavType.LongType }),
+                ) {
+                    PersonDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onEditTransaction = { id -> navController.navigate(Routes.editTransaction(id)) },
+                    )
+                }
+
+                composable(Routes.TAGS) {
+                    TagsManagerScreen(
+                        onBack = { navController.popBackStack() },
+                        onTagTap = { navController.navigate(Routes.SEARCH) },
+                    )
+                }
+
+                composable(Routes.RECURRING) {
+                    RecurringScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.CALENDAR) {
+                    CalendarScreen(
+                        onBack = { navController.popBackStack() },
+                        onEditTransaction = { id -> navController.navigate(Routes.editTransaction(id)) },
                     )
                 }
 

@@ -192,6 +192,15 @@ class TransactionRepository @Inject constructor(
             personId = personId,
         ).map { list -> list.map { it.toModel() } }
 
+    suspend fun countByTag(tagId: Long): Int = dao.countByTag(tagId)
+
+    suspend fun countByPerson(personId: Long): Int = dao.countByPerson(personId)
+
+    suspend fun personNet(personId: Long): Long = dao.personNet(personId).toMinorUnits()
+
+    fun observeByPerson(personId: Long): Flow<List<Transaction>> =
+        dao.observeByPerson(personId).map { list -> list.map { it.toModel() } }
+
     /** Expense transactions in any of the given categories between dates. */
     fun observeExpensesForCategories(
         categoryIds: List<Long>,

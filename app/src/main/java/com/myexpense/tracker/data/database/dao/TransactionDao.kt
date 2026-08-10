@@ -286,6 +286,22 @@ interface TransactionDao {
         personId: Long?,
     ): Flow<List<TransactionEntity>>
 
+    @Query("SELECT COUNT(*) FROM transactions WHERE (',' || tags || ',') LIKE '%,' || :tagId || ',%'")
+    suspend fun countByTag(tagId: Long): Int
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE personId = :personId")
+    suspend fun countByPerson(personId: Long): Int
+
+    /** Net movement with a person: income − expense (transfers excluded). */
+    @Query(
+        "SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE -amount END), 0) " +
+            "FROM transactions WHERE personId = :personId AND type != 'TRANSFER'"
+    )
+    suspend fun personNet(personId: Long): Double
+
+    @Query("SELECT * FROM transactions WHERE personId = :personId ORDER BY date DESC, id DESC")
+    fun observeByPerson(personId: Long): Flow<List<TransactionEntity>>
+
     /** The most recent transaction for every account (by insertion id). */
     @Query(
         """

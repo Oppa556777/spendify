@@ -25,6 +25,9 @@ interface PersonDao {
     @Query("SELECT * FROM people WHERE id = :id")
     suspend fun getById(id: Long): PersonEntity?
 
+    @Query("SELECT * FROM people WHERE id = :id")
+    fun observeById(id: Long): Flow<PersonEntity?>
+
     @Query("SELECT * FROM people ORDER BY name ASC")
     fun observeAll(): Flow<List<PersonEntity>>
 

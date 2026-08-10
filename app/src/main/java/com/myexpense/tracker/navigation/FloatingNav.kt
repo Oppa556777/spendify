@@ -114,8 +114,8 @@ fun FloatingPillNavBar(
                 PillNavItem(
                     label = "More",
                     icon = Icons.Filled.MoreVert,
-                    selected = selectedRoute == Routes.SETTINGS,
-                    onClick = { onSelect(Routes.SETTINGS) },
+                    selected = selectedRoute == Routes.MORE,
+                    onClick = { onSelect(Routes.MORE) },
                 )
             }
         }

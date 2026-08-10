@@ -21,7 +21,8 @@ object DateUtils {
 
     fun shortDate(date: LocalDate): String = date.format(shortDate)
 
-    fun fullDate(date: LocalDate): String = date.format(fullDate)
+    fun fullDate(date: LocalDate): String =
+        date.format(DateTimeFormatter.ofPattern(activeDateFormat.pattern, Locale.getDefault()))
 
     /** "9 Aug 2026" */
     fun mediumDate(date: LocalDate): String =
@@ -57,6 +58,10 @@ object DateUtils {
 }
 
 // ── Timestamp conversions (database stores epoch millis, UTC midnight) ──────
+
+/** Selected date format (toggled by the Settings screen). */
+@Volatile
+var activeDateFormat: com.myexpense.tracker.data.model.DateFormat = com.myexpense.tracker.data.model.DateFormat.DDMMYYYY
 
 fun LocalDate.toEpochMillis(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 

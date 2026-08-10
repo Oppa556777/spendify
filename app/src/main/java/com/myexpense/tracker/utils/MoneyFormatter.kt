@@ -11,6 +11,10 @@ import java.util.Locale
  */
 object MoneyFormatter {
 
+    /** Toggled by the Settings screen (Number Format). */
+    @Volatile
+    var useIndianFormat: Boolean = true
+
     private val symbols = DecimalFormatSymbols.getInstance(Locale.US)
 
     private fun decimalFormat(maxFractionDigits: Int = 2): DecimalFormat =
@@ -22,6 +26,7 @@ object MoneyFormatter {
 
     /** 123456 → "1,234.56" (no symbol). */
     fun format(amountMinor: Long, maxFractionDigits: Int = 2): String {
+        if (useIndianFormat) return formatIndian(amountMinor, "").removePrefix("₹")
         val value = BigDecimal(amountMinor).movePointLeft(2)
         return decimalFormat(maxFractionDigits).format(value)
     }

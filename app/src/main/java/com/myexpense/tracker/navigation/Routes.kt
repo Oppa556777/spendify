@@ -23,6 +23,12 @@ object Routes {
     const val ACHIEVEMENTS = "achievements"
     const val BILL_SPLITS = "billsplits"
     const val ASSETS = "assets"
+    const val MORE = "more"
+    const val PEOPLE = "people"
+    const val PERSON_DETAIL = "person/detail/{id}"
+    const val TAGS = "tags"
+    const val RECURRING = "recurring"
+    const val CALENDAR = "calendar"
     const val ONBOARDING = "onboarding"
 
     fun addTransaction(type: TransactionType): String = "transaction/add?type=${type.name}"
@@ -30,4 +36,5 @@ object Routes {
     fun editTransaction(id: Long) = "transaction/edit/$id"
     fun accountDetail(id: Long) = "account/detail/$id"
     fun budgetDetail(id: Long) = "budget/detail/$id"
+    fun personDetail(id: Long) = "person/detail/$id"
 }

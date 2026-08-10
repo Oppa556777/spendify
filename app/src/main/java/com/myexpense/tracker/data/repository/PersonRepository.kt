@@ -20,6 +20,8 @@ class PersonRepository @Inject constructor(
 
     suspend fun getAll(): List<Person> = dao.getAll().map { it.toModel() }
 
+    fun observeById(id: Long): Flow<Person?> = dao.observeById(id).map { it?.toModel() }
+
     suspend fun save(name: String, phone: String?, color: Long): Long =
         dao.insert(PersonEntity(name = name, phone = phone?.ifBlank { null }, avatarColor = color.toHexColor()))
 

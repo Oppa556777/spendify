@@ -119,9 +119,18 @@ class MainActivity : FragmentActivity() {
                 ActivityResultContracts.RequestPermission()
             ) { }
 
+            // Keep the global number/date formatters in sync with settings.
+            LaunchedEffect(settings.numberFormat, settings.dateFormat) {
+                com.myexpense.tracker.utils.MoneyFormatter.useIndianFormat =
+                    settings.numberFormat == com.myexpense.tracker.data.model.NumberFormat.INDIAN
+                com.myexpense.tracker.utils.DateUtils.activeDateFormat = settings.dateFormat
+            }
+
             MoneyMateTheme(
                 themeMode = settings.themeMode,
                 dynamicColors = settings.dynamicColors,
+                accent = settings.accent,
+                fontSize = settings.fontSize,
             ) {
                 LaunchedEffect(Unit) {
                     if (!askedPermission && Build.VERSION.SDK_INT >= 33) {
