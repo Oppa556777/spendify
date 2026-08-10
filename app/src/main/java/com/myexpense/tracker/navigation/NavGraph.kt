@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.myexpense.tracker.data.model.TransactionType
 import com.myexpense.tracker.ui.screens.accounts.AccountsScreen
+import com.myexpense.tracker.ui.screens.accounts.AccountDetailScreen
 import com.myexpense.tracker.ui.screens.addedit.AddEditTransactionScreen
 import com.myexpense.tracker.ui.screens.backup.BackupRestoreScreen
 import com.myexpense.tracker.ui.screens.budgets.BudgetsScreen
@@ -133,7 +134,24 @@ fun MoneyMateNavHost() {
                 }
 
                 composable(Routes.ACCOUNTS) {
-                    AccountsScreen(onBack = { navController.popBackStack() })
+                    AccountsScreen(
+                        onBack = { navController.popBackStack() },
+                        onAccountClick = { id -> navController.navigate(Routes.accountDetail(id)) },
+                    )
+                }
+
+                composable(
+                    route = Routes.ACCOUNT_DETAIL,
+                    arguments = listOf(navArgument("id") { type = NavType.LongType }),
+                ) {
+                    AccountDetailScreen(
+                        onBack = { navController.popBackStack() },
+                        onTransfer = { accountId ->
+                            navController.navigate(Routes.transferFrom(accountId)) {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
                 }
 
                 composable(Routes.CATEGORIES) {
@@ -157,6 +175,10 @@ fun MoneyMateNavHost() {
                         navArgument("type") {
                             type = NavType.StringType
                             defaultValue = TransactionType.EXPENSE.name
+                        },
+                        navArgument("from") {
+                            type = NavType.LongType
+                            defaultValue = -1L
                         }
                     ),
                 ) {

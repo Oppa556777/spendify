@@ -43,6 +43,10 @@ class AccountRepository @Inject constructor(
 
     suspend fun getById(id: Long): Account? = dao.getById(id)?.toModel()
 
+    /** Live single-account observation. */
+    fun observeById(id: Long): Flow<Account?> =
+        dao.observeById(id).map { it?.toModel() }
+
     suspend fun save(account: Account): Long {
         val entity = account.toEntity()
         return if (account.id == 0L) dao.insert(entity) else {

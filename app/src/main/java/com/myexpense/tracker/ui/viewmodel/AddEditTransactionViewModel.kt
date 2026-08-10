@@ -85,6 +85,9 @@ class AddEditTransactionViewModel @Inject constructor(
         TransactionType.valueOf(savedStateHandle.get<String>("type") ?: TransactionType.EXPENSE.name)
     }.getOrDefault(TransactionType.EXPENSE)
 
+    /** Pre-selected source account (used when opening a transfer from a detail screen). */
+    private val presetFrom: Long = savedStateHandle.get<Long>("from")?.takeIf { it > 0 } ?: -1L
+
     // ── Form fields ────────────────────────────────────────────────────────
     private val calc = MutableStateFlow(CalcState())
     private val type = MutableStateFlow(presetType)
@@ -211,8 +214,11 @@ class AddEditTransactionViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AddEditTransactionUiState())
 
-    // ── Edit-mode loading ───────────────────────────────────────────────────
+    // ── Edit-mode loading / preset account ─────────────────────────────────
     init {
+        if (presetFrom > 0) {
+            accountId.value = presetFrom
+        }
         if (editingId != 0L) {
             viewModelScope.launch {
                 transactionRepository.getById(editingId)?.let { t ->

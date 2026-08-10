@@ -136,6 +136,38 @@ class TransactionRepository @Inject constructor(
     ): Flow<List<com.myexpense.tracker.data.database.dao.MonthlyCategoryRow>> =
         dao.observeMonthlyCategoryTotals(from.toEpochMillis(), to.toEpochMillis(), type)
 
+    /** 30-day balance history for one account, reconstructed from today's balance. */
+    fun observeAccountBalanceSeries(
+        accountId: Long,
+        currentBalanceMinor: Long,
+        days: Int = 30,
+    ): Flow<List<Pair<LocalDate, Long>>> {
+        val today = LocalDate.now()
+        val from = today.minusDays((days - 1).toLong())
+        return dao.observeAccountDailyNet(accountId, from.toEpochMillis(), today.toEpochMillis()).map { rows ->
+            val netByDay = rows.associate { it.day to it.net.toMinorUnits() }
+            val result = mutableListOf<Pair<LocalDate, Long>>()
+            var running = currentBalanceMinor
+            // walk newest → oldest accumulating net, then reverse
+            val backwards = (days - 1 downTo 0).map { offset ->
+                val day = from.plusDays(offset.toLong())
+                val value = running
+                running -= (netByDay[day.toString()] ?: 0L)
+                day to value
+            }
+            backwards.reversed().forEach { result.add(it) }
+            result
+        }
+    }
+
+    /** All transactions touching an account (source or destination). */
+    fun observeForAccount(accountId: Long, type: TransactionType?): Flow<List<Transaction>> =
+        dao.observeAccountTransactions(accountId, type).map { list -> list.map { it.toModel() } }
+
+    /** The most recent transaction per account. */
+    fun observeLatestPerAccount(): Flow<List<Transaction>> =
+        dao.observeLatestPerAccount().map { list -> list.map { it.toModel() } }
+
     suspend fun save(transaction: Transaction): Long {
         val entity = transaction.toEntity()
         return if (transaction.id == 0L) dao.insert(entity) else {

@@ -29,6 +29,12 @@ data class DailyTotalRow(
     val total: Double,
 )
 
+/** One day × account aggregation cell. */
+data class AccountDailyRow(
+    val day: String,        // "yyyy-MM-dd"
+    val net: Double,        // income − expense − transfers-out + transfers-in
+)
+
 /** One month × category cell of the aggregation. */
 data class MonthlyCategoryRow(
     val month: String,          // "yyyy-MM"
@@ -188,6 +194,49 @@ interface TransactionDao {
         """
     )
     fun observeMonthlyCategoryTotals(from: Long, to: Long, type: TransactionType): Flow<List<MonthlyCategoryRow>>
+
+    /**
+     * Daily net movement for one account (income/expense on [accountId],
+     * transfers out of [accountId] count negative, transfers into it count
+     * positive). Used to reconstruct the 30-day balance chart.
+     */
+    @Query(
+        """
+        SELECT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime') AS day,
+               SUM(CASE
+                   WHEN type = 'INCOME' AND accountId = :accountId THEN amount
+                   WHEN type = 'EXPENSE' AND accountId = :accountId THEN -amount
+                   WHEN type = 'TRANSFER' AND accountId = :accountId THEN -amount
+                   WHEN type = 'TRANSFER' AND toAccountId = :accountId THEN amount
+                   ELSE 0 END) AS net
+        FROM transactions
+        WHERE date BETWEEN :from AND :to AND (accountId = :accountId OR toAccountId = :accountId)
+        GROUP BY day
+        ORDER BY day ASC
+        """
+    )
+    fun observeAccountDailyNet(accountId: Long, from: Long, to: Long): Flow<List<AccountDailyRow>>
+
+    /** All transactions touching an account (as source or transfer destination). */
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE (accountId = :accountId OR toAccountId = :accountId)
+          AND (:type IS NULL OR type = :type)
+        ORDER BY date DESC, id DESC
+        """
+    )
+    fun observeAccountTransactions(accountId: Long, type: TransactionType?): Flow<List<TransactionEntity>>
+
+    /** The most recent transaction for every account (by insertion id). */
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE id IN (SELECT MAX(id) FROM transactions GROUP BY COALESCE(accountId, toAccountId))
+        ORDER BY date DESC
+        """
+    )
+    fun observeLatestPerAccount(): Flow<List<TransactionEntity>>
 
     @Query("SELECT COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0) FROM transactions")
     fun observeTotalIncome(): Flow<Double>

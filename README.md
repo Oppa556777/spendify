@@ -50,7 +50,13 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
   updates; filter by month, type, category, account; search
 - **Categories** – 18 built-in defaults, fully editable; pick from emoji icons
   (classic) / 100+ Material icons (Compose) and a color palette
-- **Accounts** – cash, bank, card, e-wallet… with live balances
+- **Accounts** – "My Accounts" screen with Total Assets / Liabilities / Net
+  Worth summary, a swipeable gradient account carousel (per-account gradient,
+  name/type/icon/balance/last transaction), full account list with
+  swipe-to-delete, and a rich add/edit bottom sheet (7 account types with
+  emojis, 50+ currency dropdown, 20-color + random picker, 100+ icon grid,
+  default toggle); account detail screen with 30-day balance line chart,
+  income/expense filters, transaction list and Transfer From/To button
 - **Budgets** – monthly per-category limits with progress bars & overspend
   warnings
 - **Reports & Analytics** – 10 interactive Canvas charts in M3 cards: grouped
