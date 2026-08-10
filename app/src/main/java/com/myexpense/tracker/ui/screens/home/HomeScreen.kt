@@ -200,8 +200,11 @@ fun HomeScreen(
             if (state.recentTransactions.isEmpty()) {
                 item {
                     EmptyState(
-                        title = "No transactions yet",
-                        subtitle = "Tap + Add Expense or Income to get started.",
+                        title = "Nothing here yet",
+                        subtitle = "Add your first expense or income to get started.",
+                        illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_piggy,
+                        ctaLabel = "Add Now",
+                        onCta = onAddExpense,
                     )
                 }
             } else {

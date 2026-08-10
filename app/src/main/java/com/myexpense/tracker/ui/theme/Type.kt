@@ -8,47 +8,83 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.myexpense.tracker.R
 
-/** Primary font: Nunito (rounded, friendly). */
+/**
+ * Font families per the design system:
+ *  Nunito — ExtraBold(800), Bold(700), SemiBold(600), Regular(400)
+ *  Inter  — Medium(500), Regular(400), Light(300)
+ */
 val NunitoFamily = FontFamily(
     Font(R.font.nunito_regular, FontWeight.Normal),
-    Font(R.font.nunito_light, FontWeight.Light),
-    Font(R.font.nunito_extralight, FontWeight.ExtraLight),
     Font(R.font.nunito_semibold, FontWeight.SemiBold),
     Font(R.font.nunito_bold, FontWeight.Bold),
     Font(R.font.nunito_extrabold, FontWeight.ExtraBold),
     Font(R.font.nunito_black, FontWeight.Black),
 )
 
-/** Secondary font: Inter (clean, great for numbers). */
 val InterFamily = FontFamily(
+    Font(R.font.inter_light, FontWeight.Light),
     Font(R.font.inter_regular, FontWeight.Normal),
     Font(R.font.inter_medium, FontWeight.Medium),
     Font(R.font.inter_semibold, FontWeight.SemiBold),
     Font(R.font.inter_bold, FontWeight.Bold),
 )
 
-private val defaultTypography = Typography()
-
-val MoneyMateTypography = Typography(
-    displayLarge = defaultTypography.displayLarge.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold),
-    displayMedium = defaultTypography.displayMedium.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold),
-    displaySmall = defaultTypography.displaySmall.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold),
-    headlineLarge = defaultTypography.headlineLarge.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold),
-    headlineMedium = defaultTypography.headlineMedium.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold),
-    headlineSmall = defaultTypography.headlineSmall.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold),
-    titleLarge = defaultTypography.titleLarge.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold),
-    titleMedium = defaultTypography.titleMedium.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold),
-    titleSmall = defaultTypography.titleSmall.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold),
-    bodyLarge = defaultTypography.bodyLarge.copy(fontFamily = NunitoFamily),
-    bodyMedium = defaultTypography.bodyMedium.copy(fontFamily = NunitoFamily),
-    bodySmall = defaultTypography.bodySmall.copy(fontFamily = NunitoFamily),
-    labelLarge = defaultTypography.labelLarge.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold),
-    labelMedium = defaultTypography.labelMedium.copy(fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold),
-    labelSmall = defaultTypography.labelSmall.copy(fontFamily = InterFamily, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
-)
-
 /** Font family used for amounts / numeric read-outs. */
 val AmountFontFamily = InterFamily
+
+/**
+ * The named type scale from the design system.
+ *  Display 48 / H1 28 / H2 22 / H3 18 / H4 16 / Body1 15 / Body2 13 /
+ *  Caption 11 / Label 12
+ */
+object TypeScale {
+    val Display = TextStyle(
+        fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold, fontSize = 48.sp,
+    )
+    val H1 = TextStyle(
+        fontFamily = NunitoFamily, fontWeight = FontWeight.Bold, fontSize = 28.sp,
+    )
+    val H2 = TextStyle(
+        fontFamily = NunitoFamily, fontWeight = FontWeight.Bold, fontSize = 22.sp,
+    )
+    val H3 = TextStyle(
+        fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp,
+    )
+    val H4 = TextStyle(
+        fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp,
+    )
+    val Body1 = TextStyle(
+        fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 15.sp,
+    )
+    val Body2 = TextStyle(
+        fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 13.sp,
+    )
+    val Caption = TextStyle(
+        fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 11.sp,
+    )
+    val Label = TextStyle(
+        fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 12.sp,
+    )
+}
+
+/** Material 3 roles mapped onto the design-system type scale. */
+val MoneyMateTypography = Typography(
+    displayLarge = TypeScale.Display,
+    displayMedium = TypeScale.H1,
+    displaySmall = TypeScale.H2,
+    headlineLarge = TypeScale.H1,
+    headlineMedium = TypeScale.H2,
+    headlineSmall = TypeScale.H3,
+    titleLarge = TypeScale.H2,
+    titleMedium = TypeScale.H3,
+    titleSmall = TypeScale.H4,
+    bodyLarge = TypeScale.Body1,
+    bodyMedium = TypeScale.Body2,
+    bodySmall = TypeScale.Caption,
+    labelLarge = TypeScale.Label.copy(fontWeight = FontWeight.SemiBold),
+    labelMedium = TypeScale.Label,
+    labelSmall = TypeScale.Caption.copy(fontWeight = FontWeight.Medium),
+)
 
 /** Scales every text style by [factor] (font size presets). */
 fun scaleTypography(base: Typography, factor: Float): Typography = Typography(

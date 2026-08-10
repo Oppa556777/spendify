@@ -96,6 +96,16 @@ fun MoneyMateNavHost(initialDestination: String? = null) {
                 navController = navController,
                 startDestination = Routes.HOME,
                 modifier = Modifier.fillMaxSize(),
+                enterTransition = {
+                    androidx.compose.animation.fadeIn(tween(300)) +
+                        androidx.compose.animation.slideInHorizontally(tween(300)) { it / 4 }
+                },
+                exitTransition = {
+                    androidx.compose.animation.fadeOut(tween(300)) +
+                        androidx.compose.animation.slideOutHorizontally(tween(300)) { -it / 4 }
+                },
+                popEnterTransition = { androidx.compose.animation.fadeIn(tween(300)) },
+                popExitTransition = { androidx.compose.animation.fadeOut(tween(300)) },
             ) {
                 composable(Routes.HOME) {
                     HomeScreen(

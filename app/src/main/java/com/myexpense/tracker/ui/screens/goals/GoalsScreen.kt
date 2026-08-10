@@ -127,8 +127,11 @@ fun GoalsScreen(
     ) { padding ->
         if (state.goals.isEmpty()) {
             EmptyState(
-                title = "No savings goals yet",
-                subtitle = "Create a goal and watch your savings grow.",
+                title = "Nothing here yet",
+                subtitle = "Create a savings goal and watch your money grow.",
+                illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_target,
+                ctaLabel = "Add Goal",
+                onCta = { showSheet = true },
                 modifier = Modifier.padding(padding),
             )
         } else {

@@ -1,5 +1,6 @@
 package com.myexpense.tracker.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,34 +19,50 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-/** Friendly empty-state placeholder used across screens. */
+/**
+ * Illustrated empty state: centered illustration (vector drawable),
+ * title, contextual description and an optional CTA button.
+ */
 @Composable
 fun EmptyState(
     title: String,
     subtitle: String? = null,
     modifier: Modifier = Modifier,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Outlined.Inbox,
+    icon: ImageVector = Icons.Outlined.Inbox,
+    illustrationRes: Int? = null,
+    ctaLabel: String? = null,
+    onCta: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 48.dp, horizontal = 32.dp),
+            .padding(vertical = 40.dp, horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        ) {
-            Icon(
-                imageVector = icon,
+        if (illustrationRes != null) {
+            Image(
+                painter = painterResource(illustrationRes),
                 contentDescription = null,
-                modifier = Modifier.padding(16.dp).size(40.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(120.dp),
             )
+        } else {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.padding(16.dp).size(40.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Text(
             text = title,
@@ -59,6 +77,11 @@ fun EmptyState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
+        }
+        if (ctaLabel != null && onCta != null) {
+            Button(onClick = onCta) {
+                Text(ctaLabel)
+            }
         }
     }
 }

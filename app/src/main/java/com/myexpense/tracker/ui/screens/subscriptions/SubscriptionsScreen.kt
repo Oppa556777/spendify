@@ -178,8 +178,11 @@ fun SubscriptionsScreen(
             if (state.subscriptions.isEmpty()) {
                 item {
                     EmptyState(
-                        title = "No subscriptions",
+                        title = "Nothing here yet",
                         subtitle = "Track Netflix, Spotify, gym memberships and more.",
+                        illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_calendar,
+                        ctaLabel = "Add Subscription",
+                        onCta = { showSheet = true },
                     )
                 }
             } else {

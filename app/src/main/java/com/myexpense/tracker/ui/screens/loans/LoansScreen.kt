@@ -104,8 +104,11 @@ fun LoansScreen(
     ) { padding ->
         if (state.loans.isEmpty()) {
             EmptyState(
-                title = "No loans yet",
+                title = "Nothing here yet",
                 subtitle = "Track money you lent or borrowed.",
+                illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_handshake,
+                ctaLabel = "Add Loan",
+                onCta = { showSheet = true },
                 modifier = Modifier.padding(padding),
             )
             return@Scaffold

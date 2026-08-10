@@ -97,6 +97,17 @@ toolchain — see `appclassic/README.md` for the full offline build recipe.
 - **Advanced search** – instant results with date/category/account/amount/tag/
   person filters, sort by date/amount/category, highlighted matches and local
   recent-search history
+- **Design system** – complete tokens: Nunito (ExtraBold/Bold/SemiBold/
+  Regular) + Inter (Medium/Regular/Light) with a full type scale
+  (Display 48 → Caption 11), spec-exact light/dark color palettes, 12-category
+  palette, 6 account-card gradients, corner-radius/spacing/elevation scales,
+  15-component library (AmountText with count-up, TransactionListItem with
+  swipe, CategoryChip, ProgressCard, SummaryCard, SectionHeader, EmptyState
+  with vector illustrations + CTA, LoadingShimmer, ConfirmDialog,
+  DateRangePicker, CurrencyInput + calculator, IconPickerGrid, ColorPickerRow,
+  SnackBarMessage, AchievementCard), staggered list fade-ins, shimmer
+  skeletons, 300ms fade+slide screen transitions, and illustrated empty states
+  (piggy bank / budget chart / target / handshake / calendar)
 - **Home-screen widgets** – 2×1 balance widget (today's spending + balance)
   and 4×2 7-day spending graph widget; taps open the app / Reports
 - **More menu** – grouped hub (Tools: Achievements, Bill Splitter, Asset

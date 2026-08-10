@@ -2,73 +2,102 @@ package com.myexpense.tracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Brand palette ────────────────────────────────────────────────────────────
-val GreenPrimary = Color(0xFF2E7D32)
-val GreenOnPrimary = Color(0xFFFFFFFF)
-val GreenPrimaryContainer = Color(0xFFB7F0B0)
-val GreenOnPrimaryContainer = Color(0xFF00210A)
-
-val GreenSecondary = Color(0xFF52634F)
-val GreenOnSecondary = Color(0xFFFFFFFF)
-val GreenSecondaryContainer = Color(0xFFD5E8CF)
-val GreenOnSecondaryContainer = Color(0xFF101F10)
-
-val GreenTertiary = Color(0xFF3A6462)
-val GreenOnTertiary = Color(0xFFFFFFFF)
-val GreenTertiaryContainer = Color(0xFFBCEBE7)
-val GreenOnTertiaryContainer = Color(0xFF00201F)
-
-// ── Light scheme ─────────────────────────────────────────────────────────────
-val LightBackground = Color(0xFFF7F9F5)
-val LightOnBackground = Color(0xFF191C18)
-val LightSurface = Color(0xFFF7F9F5)
-val LightOnSurface = Color(0xFF191C18)
-val LightSurfaceVariant = Color(0xFFDEE5DA)
-val LightOnSurfaceVariant = Color(0xFF424940)
-val LightSurfaceContainer = Color(0xFFEBF0E6)
-val LightSurfaceContainerHigh = Color(0xFFE5EBE1)
-val LightSurfaceContainerHighest = Color(0xFFDFE5DB)
-val LightOutline = Color(0xFF72796F)
-val LightOutlineVariant = Color(0xFFC2C9BE)
-val LightError = Color(0xFFBA1A1A)
+// ─────────────────────────────────────────────────────────────────────────────
+// LIGHT THEME
+// ─────────────────────────────────────────────────────────────────────────────
+val LightPrimary = Color(0xFF6C63FF)          // Purple
+val LightPrimaryVariant = Color(0xFF5A52E0)
+val LightSecondary = Color(0xFF03DAC6)        // Teal
+val LightBackground = Color(0xFFF5F5F8)
+val LightSurface = Color(0xFFFFFFFF)
+val LightSurfaceVariant = Color(0xFFF0EFFE)
+val LightOnPrimary = Color(0xFFFFFFFF)
+val LightOnBackground = Color(0xFF1A1A2E)
+val LightOnSurface = Color(0xFF1A1A2E)
+val LightOnSurfaceVariant = Color(0xFF6B6B8A)
+val LightOutline = Color(0xFFC4C4D4)
+val LightOutlineVariant = Color(0xFFE4E4F0)
+val LightError = Color(0xFFE53935)
 val LightOnError = Color(0xFFFFFFFF)
 val LightErrorContainer = Color(0xFFFFDAD6)
 val LightOnErrorContainer = Color(0xFF410002)
+val LightSurfaceContainer = Color(0xFFF1F0FA)
+val LightSurfaceContainerHigh = Color(0xFFEBEAF6)
+val LightSurfaceContainerHighest = Color(0xFFE5E4F2)
 
-// ── Dark scheme ──────────────────────────────────────────────────────────────
-val DarkPrimary = Color(0xFF9CD495)
-val DarkOnPrimary = Color(0xFF003911)
-val DarkPrimaryContainer = Color(0xFF155223)
-val DarkOnPrimaryContainer = Color(0xFFB7F0B0)
-
-val DarkSecondary = Color(0xFFB9CCB4)
-val DarkOnSecondary = Color(0xFF253425)
-val DarkSecondaryContainer = Color(0xFF3B4B3A)
-val DarkOnSecondaryContainer = Color(0xFFD5E8CF)
-
-val DarkTertiary = Color(0xFFA0CFCB)
-val DarkOnTertiary = Color(0xFF003735)
-val DarkTertiaryContainer = Color(0xFF204C4A)
-val DarkOnTertiaryContainer = Color(0xFFBCEBE7)
-
-val DarkBackground = Color(0xFF111410)
-val DarkOnBackground = Color(0xFFE1E3DD)
-val DarkSurface = Color(0xFF111410)
-val DarkOnSurface = Color(0xFFE1E3DD)
-val DarkSurfaceVariant = Color(0xFF424940)
-val DarkOnSurfaceVariant = Color(0xFFC2C9BE)
-val DarkSurfaceContainer = Color(0xFF1D211C)
-val DarkSurfaceContainerHigh = Color(0xFF272B26)
-val DarkSurfaceContainerHighest = Color(0xFF323630)
-val DarkOutline = Color(0xFF8C9389)
-val DarkOutlineVariant = Color(0xFF424940)
-val DarkError = Color(0xFFFFB4AB)
+// ─────────────────────────────────────────────────────────────────────────────
+// DARK THEME
+// ─────────────────────────────────────────────────────────────────────────────
+val DarkPrimary = Color(0xFF7C74FF)           // Lighter Purple
+val DarkPrimaryVariant = Color(0xFF6C63FF)
+val DarkSecondary = Color(0xFF03DAC6)
+val DarkBackground = Color(0xFF0D0D1A)
+val DarkSurface = Color(0xFF1A1A2E)
+val DarkSurfaceVariant = Color(0xFF252540)
+val DarkOnPrimary = Color(0xFF000000)
+val DarkOnBackground = Color(0xFFE8E8FF)
+val DarkOnSurface = Color(0xFFE8E8FF)
+val DarkOnSurfaceVariant = Color(0xFFA8A8C8)
+val DarkOutline = Color(0xFF404060)
+val DarkOutlineVariant = Color(0xFF33334F)
+val DarkError = Color(0xFFCF6679)
 val DarkOnError = Color(0xFF690005)
 val DarkErrorContainer = Color(0xFF93000A)
 val DarkOnErrorContainer = Color(0xFFFFDAD6)
+val DarkSurfaceContainer = Color(0xFF22223A)
+val DarkSurfaceContainerHigh = Color(0xFF2C2C48)
+val DarkSurfaceContainerHighest = Color(0xFF363658)
 
-// ── Semantic accents ─────────────────────────────────────────────────────────
-val IncomeGreen = Color(0xFF2E7D32)
-val IncomeGreenDark = Color(0xFF81C784)
-val ExpenseRed = Color(0xFFC62828)
-val ExpenseRedDark = Color(0xFFEF9A9A)
+// ─────────────────────────────────────────────────────────────────────────────
+// SEMANTIC
+// ─────────────────────────────────────────────────────────────────────────────
+val IncomeGreen = Color(0xFF00C853)
+val ExpenseRed = Color(0xFFFF1744)
+val TransferBlue = Color(0xFF2979FF)
+val WarningOrange = Color(0xFFFF9800)
+val SuccessGreen = Color(0xFF43A047)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORY COLOR PALETTE (assigned in order)
+// ─────────────────────────────────────────────────────────────────────────────
+val CategoryPalette = listOf(
+    Color(0xFFFF6B6B),  // Red-Pink
+    Color(0xFFFFA94D),  // Orange
+    Color(0xFFFFD43B),  // Yellow
+    Color(0xFF69DB7C),  // Green
+    Color(0xFF4DABF7),  // Blue
+    Color(0xFFDA77F2),  // Purple
+    Color(0xFFF783AC),  // Pink
+    Color(0xFF63E6BE),  // Teal
+    Color(0xFF74C0FC),  // Light Blue
+    Color(0xFFA9E34B),  // Lime
+    Color(0xFFFFD8A8),  // Peach
+    Color(0xFFE599F7),  // Lavender
+)
+
+/** Category colors as opaque ARGB Longs (for the database). */
+val CategoryColorLongs: List<Long> = CategoryPalette.map { it.value.toLong() or 0xFF000000 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCOUNT CARD GRADIENTS
+// ─────────────────────────────────────────────────────────────────────────────
+data class AccountGradient(val start: Long, val end: Long)
+
+object AccountGradients {
+    val BLUE_BANK = AccountGradient(0xFF667EEA, 0xFF764BA2)
+    val GREEN_CASH = AccountGradient(0xFF11998E, 0xFF38EF7D)
+    val PURPLE_CREDIT = AccountGradient(0xFFDA22FF, 0xFF9733EE)
+    val ORANGE_WALLET = AccountGradient(0xFFF7971E, 0xFFFFD200)
+    val TEAL_SAVINGS = AccountGradient(0xFF0F2027, 0xFF2C5364)
+    val PINK_INVEST = AccountGradient(0xFFEE0979, 0xFFFF6A00)
+
+    /** Stable per-account gradient selection. */
+    fun forAccount(accountId: Long): AccountGradient = when ((accountId % 6).toInt()) {
+        0 -> BLUE_BANK
+        1 -> GREEN_CASH
+        2 -> PURPLE_CREDIT
+        3 -> ORANGE_WALLET
+        4 -> TEAL_SAVINGS
+        else -> PINK_INVEST
+    }
+}

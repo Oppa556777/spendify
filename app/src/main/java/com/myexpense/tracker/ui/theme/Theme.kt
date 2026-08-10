@@ -14,29 +14,21 @@ import com.myexpense.tracker.data.model.Accent
 import com.myexpense.tracker.data.model.FontSize
 import com.myexpense.tracker.data.model.ThemeMode
 
-/** Applies an accent's brand color to the primary/secondary/tertiary slots. */
-private fun accentColors(accent: Accent, dark: Boolean): Triple<Color, Color, Color> {
-    val base = Color(accent.color)
-    val secondary = if (dark) base.copy(alpha = 0.8f) else base.copy(alpha = 0.85f)
-    val tertiary = if (dark) Color(0xFFA0CFCB) else Color(0xFF3A6462)
-    return Triple(base, secondary, tertiary)
-}
-
 private fun lightScheme(accent: Accent): androidx.compose.material3.ColorScheme {
-    val (primary, secondary, tertiary) = accentColors(accent, false)
+    val primary = Color(accent.color)
     return lightColorScheme(
         primary = primary,
-        onPrimary = Color.White,
-        primaryContainer = Color(0xFFE8DEF8),
-        onPrimaryContainer = Color(0xFF21005D),
-        secondary = secondary,
-        onSecondary = Color.White,
-        secondaryContainer = Color(0xFFE8DEF8),
-        onSecondaryContainer = Color(0xFF1D192B),
-        tertiary = tertiary,
+        onPrimary = LightOnPrimary,
+        primaryContainer = LightSurfaceVariant,
+        onPrimaryContainer = LightOnBackground,
+        secondary = LightSecondary,
+        onSecondary = Color.Black,
+        secondaryContainer = Color(0xFFCCFCF4),
+        onSecondaryContainer = Color(0xFF00201B),
+        tertiary = LightPrimaryVariant,
         onTertiary = Color.White,
-        tertiaryContainer = Color(0xFFFFD8E4),
-        onTertiaryContainer = Color(0xFF31111D),
+        tertiaryContainer = Color(0xFFECE9FF),
+        onTertiaryContainer = LightOnBackground,
         background = LightBackground,
         onBackground = LightOnBackground,
         surface = LightSurface,
@@ -56,25 +48,25 @@ private fun lightScheme(accent: Accent): androidx.compose.material3.ColorScheme 
 }
 
 private fun darkScheme(accent: Accent, amoled: Boolean): androidx.compose.material3.ColorScheme {
-    val (primary, secondary, tertiary) = accentColors(accent, true)
+    val primary = if (amoled) DarkPrimary else Color(accent.color)
     val bg = if (amoled) Color.Black else DarkBackground
     val surface = if (amoled) Color.Black else DarkSurface
-    val container = if (amoled) Color(0xFF111111) else DarkSurfaceContainer
-    val containerHigh = if (amoled) Color(0xFF1A1A1A) else DarkSurfaceContainerHigh
-    val containerHighest = if (amoled) Color(0xFF242424) else DarkSurfaceContainerHighest
+    val container = if (amoled) Color(0xFF101018) else DarkSurfaceContainer
+    val containerHigh = if (amoled) Color(0xFF1A1A26) else DarkSurfaceContainerHigh
+    val containerHighest = if (amoled) Color(0xFF242434) else DarkSurfaceContainerHighest
     return darkColorScheme(
         primary = primary,
-        onPrimary = Color.White,
-        primaryContainer = DarkPrimaryContainer,
-        onPrimaryContainer = DarkOnPrimaryContainer,
-        secondary = secondary,
-        onSecondary = Color(0xFF2A2A2A),
-        secondaryContainer = DarkSecondaryContainer,
-        onSecondaryContainer = DarkOnSecondaryContainer,
-        tertiary = tertiary,
-        onTertiary = Color(0xFF003735),
-        tertiaryContainer = DarkTertiaryContainer,
-        onTertiaryContainer = DarkOnTertiaryContainer,
+        onPrimary = DarkOnPrimary,
+        primaryContainer = DarkSurfaceVariant,
+        onPrimaryContainer = DarkOnSurface,
+        secondary = DarkSecondary,
+        onSecondary = Color.Black,
+        secondaryContainer = Color(0xFF004B41),
+        onSecondaryContainer = Color(0xFFCCFCF4),
+        tertiary = DarkPrimaryVariant,
+        onTertiary = Color.Black,
+        tertiaryContainer = Color(0xFF3A3590),
+        onTertiaryContainer = Color(0xFFE3DFFF),
         background = bg,
         onBackground = DarkOnBackground,
         surface = surface,

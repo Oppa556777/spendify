@@ -135,8 +135,11 @@ fun TransactionsScreen(
 
             if (state.transactions.isEmpty()) {
                 EmptyState(
-                    title = "No transactions",
+                    title = "Nothing here yet",
                     subtitle = "Nothing matches these filters for ${DateUtils.monthYear(state.month)}.",
+                    illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_piggy,
+                    ctaLabel = "Add Expense",
+                    onCta = onAddTransaction,
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {

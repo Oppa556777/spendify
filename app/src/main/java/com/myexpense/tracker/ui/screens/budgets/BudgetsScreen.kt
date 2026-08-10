@@ -148,13 +148,16 @@ fun BudgetsScreen(
             if (state.budgets.isEmpty()) {
                 item {
                     EmptyState(
-                        title = "No budgets here",
+                        title = "Nothing here yet",
                         subtitle = when (state.filter) {
-                            BudgetFilter.ALL -> "Tap + to create your first budget."
+                            BudgetFilter.ALL -> "Create your first budget to stay on track."
                             BudgetFilter.ACTIVE -> "No active budgets. Create one to stay on track."
                             BudgetFilter.OVER_BUDGET -> "Nothing is over budget. 🎉"
                             BudgetFilter.COMPLETED -> "No completed budgets yet."
                         },
+                        illustrationRes = com.myexpense.tracker.R.drawable.ic_empty_budget,
+                        ctaLabel = "Add Budget",
+                        onCta = { showSheet = true },
                     )
                 }
             } else {
